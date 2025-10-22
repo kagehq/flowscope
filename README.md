@@ -18,8 +18,10 @@ Terminal logging is the default, but it's painful:
 - ✅ **Fuzzy search** - Find requests across path, body, headers, status
 - ✅ **Performance insights** - p50/p95/p99 stats, visual highlighting of slow requests
 - ✅ **Compare view** - Side-by-side diff of any two requests
-- ✅ **Replay & Export** - Re-send requests or copy as cURL
-- ✅ **LLM Observability** - Auto-export AI calls to Arize Phoenix with cost tracking
+- ✅ **Flow tracking** - Time-travel debugging to reconstruct entire request chains
+- ✅ **LLM cost tracking** - Real-time AI API cost monitoring with optimization tips
+- ✅ **Smart mocking** - Generate working mock servers from captured traffic
+- ✅ **Session sharing** - Collaborate on debugging with shareable links
 
 ## Quick Start
 
@@ -179,14 +181,21 @@ npm run test:run
 
 ## Features
 
+### Core Debugging
 - **One-click filters** - Show only errors (4xx/5xx), slow requests (>500ms), or mutations (POST/PUT/DELETE)
 - **Fuzzy search** - Find requests across path, body, headers, and status codes
 - **Performance stats** - Real-time p50/p95/p99 response times with color-coded highlighting
 - **Compare view** - Side-by-side diff of any two requests
 - **Request replay** - Re-send any request with one click
 - **Copy as cURL** - Export requests for terminal reproduction
-- **Auto-redaction** - Sensitive data (passwords, tokens, auth) automatically hidden
-- **LLM observability** - Auto-export AI calls to Arize Phoenix with token/cost tracking
+
+### Advanced Features
+- **💰 LLM Cost Tracking** - Real-time cost dashboard with optimization tips for OpenAI, Anthropic, etc.
+- **🔄 Flow Visualizer** - Time-travel debugging - reconstruct request chains by session/correlation/user ID
+- **🎭 Smart Mocking** - Generate working Node.js mock servers from captured traffic with realistic timings
+- **🔗 Session Sharing** - Create shareable links to captured requests (expires in 7 days)
+- **🔒 Auto-redaction** - Sensitive data (passwords, tokens, auth) automatically hidden
+- **📊 Arize Integration** - Auto-export LLM calls to Arize Phoenix for AI observability
 
 ## Configuration
 
