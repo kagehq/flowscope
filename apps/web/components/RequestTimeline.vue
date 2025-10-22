@@ -1,18 +1,17 @@
 <template>
-  <div class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-4 overflow-visible">
+  <div class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-4">
     <h3 class="text-sm font-semibold text-white mb-3">Request Timeline</h3>
 
     <div v-if="timelineEvents.length === 0" class="text-xs text-gray-500 text-center py-4">
       No recent requests
     </div>
 
-    <div v-else class="relative">
+    <div v-else class="relative overflow-x-auto pb-24 pt-4">
       <!-- Timeline axis -->
-      <div class="absolute left-0 right-0 top-1/2 h-px bg-gray-500/20"></div>
+      <div class="absolute left-0 right-0 top-10 h-px bg-gray-500/20"></div>
 
       <!-- Events (positioned by actual time) -->
-      <div class="relative h-20 overflow-x-auto">
-        <div class="absolute inset-0">
+      <div class="relative h-12">
           <div
             v-for="(event, idx) in timelineEvents"
             :key="event.id"
@@ -41,7 +40,7 @@
             </div>
 
             <!-- Hover info -->
-            <div class="fixed top-20 left-1/2 -translate-x-1/2 hidden group-hover:block bg-gray-900 border-2 border-gray-500/50 rounded-lg px-3 py-2 text-xs text-white whitespace-nowrap shadow-2xl z-[9999] animate-scale-in">
+            <div class="absolute top-6 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black border border-gray-500/10 rounded-lg px-3 py-2 text-xs text-white whitespace-nowrap shadow-2xl z-[1000] animate-scale-in">
               <div class="font-mono font-semibold text-blue-300">{{ event.req.method }} {{ event.req.path }}</div>
               <div class="text-gray-300 font-mono mt-1">
                 <span class="text-gray-500">Status:</span>
