@@ -8,9 +8,11 @@ services:
       - "4320:4320"  # Dashboard
     environment:
       - PORT=4317
+      - NODE_ENV=development
       - UPSTREAM=http://host.docker.internal:3000  # Your upstream server
       - RING_SIZE=2000
       - BODY_PREVIEW_LIMIT=4096
+      - ALLOWED_ORIGINS=http://localhost:4320,http://localhost:3001
       # Uncomment for Arize integration:
       # - ARIZE_ENDPOINT=http://host.docker.internal:6006/v1/traces
       # - ARIZE_API_KEY=
@@ -31,4 +33,3 @@ services:
       - ./test:/app/test
     profiles:
       - testing  # Only run with: docker-compose --profile testing up
-
