@@ -10,16 +10,31 @@ async function bootstrap() {
     bodyParser: false,
   });
   
-  // Allow both the dashboard and any frontend apps
-  const allowedOrigins = [
-    process.env.DASHBOARD_ORIGIN || 'http://localhost:4320',
-    'http://localhost:3001', // Nuxt/frontend dev server
-    'http://localhost:3000', // Alternative frontend port
-  ];
+  // CORS: Allow dashboard and any localhost origins in development
+  const isDev = process.env.NODE_ENV !== 'production';
   
   app.use(
     cors({
-      origin: allowedOrigins,
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, Postman)
+        if (!origin) return callback(null, true);
+        
+        // In development: Allow all localhost/127.0.0.1 origins
+        if (isDev && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+          return callback(null, true);
+        }
+        
+        // Allow configured origins (comma-separated in env)
+        const allowedOrigins = process.env.ALLOWED_ORIGINS 
+          ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+          : ['http://localhost:4320'];
+        
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        
+        callback(new Error('Not allowed by CORS'));
+      },
       credentials: true,
     })
   );
@@ -39,7 +54,11 @@ async function bootstrap() {
   
   await app.listen(Number(process.env.PORT || 4317));
   console.log(`[flowscope] server running on port :${process.env.PORT || 4317}`);
-  console.log(`[flowscope] CORS enabled for:`, allowedOrigins);
+  if (isDev) {
+    console.log(`[flowscope] CORS: allowing all localhost origins (dev mode)`);
+  } else {
+    console.log(`[flowscope] CORS: ${process.env.ALLOWED_ORIGINS || 'http://localhost:4320'}`);
+  }
 }
 
 bootstrap();

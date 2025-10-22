@@ -198,9 +198,13 @@ PORT=4317                                    # Proxy server port
 UPSTREAM=http://localhost:3000               # Your backend API
 
 # Optional
-DASHBOARD_ORIGIN=http://localhost:4320       # Dashboard URL (for CORS)
 RING_SIZE=2000                               # Max requests to keep in memory
 BODY_PREVIEW_LIMIT=4096                      # Max bytes to capture from bodies
+
+# CORS (optional, auto-configured in dev)
+# In development (NODE_ENV != 'production'): All localhost origins allowed by default
+# In production: Specify comma-separated origins
+ALLOWED_ORIGINS=http://localhost:4320,https://yourdomain.com
 
 # Optional: Arize Phoenix Integration (for LLM observability)
 ARIZE_ENDPOINT=http://localhost:6006/v1/traces  # Phoenix OTLP endpoint
