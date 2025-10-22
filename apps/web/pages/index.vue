@@ -147,16 +147,16 @@ function toggleSelectForCompare(eventId: string) {
 function jumpToNextError() {
   const errorEvents = filtered.value.filter(e => e.res?.status && e.res.status >= 400);
   if (errorEvents.length === 0) return;
-  
+
   // Find current expanded error if any
   const currentIndex = expandedEventId.value
     ? errorEvents.findIndex(e => e.id === expandedEventId.value)
     : -1;
-  
+
   // Jump to next error (or first if none/last is expanded)
   const nextIndex = (currentIndex + 1) % errorEvents.length;
   expandedEventId.value = errorEvents[nextIndex].id;
-  
+
   // Scroll to the event
   setTimeout(() => {
     const element = document.getElementById(`event-${errorEvents[nextIndex].id}`);
@@ -164,7 +164,7 @@ function jumpToNextError() {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, 100);
-  
+
   toast.info(`Error ${nextIndex + 1}/${errorEvents.length}`);
 }
 
