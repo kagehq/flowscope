@@ -6,29 +6,29 @@
       No recent requests
     </div>
 
-    <div v-else class="relative overflow-x-auto pb-24 pt-4">
+    <div v-else class="relative pb-4 pt-4">
       <!-- Timeline axis -->
       <div class="absolute left-0 right-0 top-10 h-px bg-gray-500/20"></div>
 
       <!-- Events (positioned by actual time) -->
-      <div class="relative h-12">
+      <div class="relative h-12 z-10">
           <div
             v-for="(event, idx) in timelineEvents"
             :key="event.id"
-            class="absolute top-1/2 -translate-y-1/2 group cursor-pointer"
+            class="absolute top-1/2 -translate-y-1/2 group cursor-pointer z-0"
             :style="{ left: `${getEventPosition(event)}%` }"
             @click="$emit('select-event', event.id)"
           >
             <!-- Event dot (sized by duration) -->
             <div
-              class="rounded-full border-2 border-gray-800 transition-all group-hover:scale-150 z-10 flex items-center justify-center"
+              class="rounded-full border border-gray-500/20 transition-all group-hover:scale-150 z-10 flex items-center justify-center"
               :class="[
                 getDotSizeClass(event),
                 {
-                  'bg-green-300 border-green-500': event.res?.status && event.res.status >= 200 && event.res.status < 300,
-                  'bg-yellow-300 border-yellow-500': event.res?.status && event.res.status >= 300 && event.res.status < 400,
-                  'bg-red-400 border-red-600': event.res?.status && event.res.status >= 400,
-                  'bg-gray-400 border-gray-600': !event.res?.status,
+                  'bg-green-300 border-green-300': event.res?.status && event.res.status >= 200 && event.res.status < 300,
+                  'bg-yellow-300 border-yellow-300': event.res?.status && event.res.status >= 300 && event.res.status < 400,
+                  'bg-red-400 border-red-500': event.res?.status && event.res.status >= 400,
+                  'bg-gray-400 border-gray-500': !event.res?.status,
                 }
               ]"
               :title="`${event.req.method} ${event.req.path} - ${event.res?.status || 'pending'} - ${fmtMs(event.res?.durationMs)}`"
@@ -40,7 +40,7 @@
             </div>
 
             <!-- Hover info -->
-            <div class="absolute top-6 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black border border-gray-500/10 rounded-lg px-3 py-2 text-xs text-white whitespace-nowrap shadow-2xl z-[1000] animate-scale-in">
+            <div class="absolute top-6 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black border border-gray-500/20 rounded-lg px-3 py-2 text-xs text-white whitespace-nowrap shadow-2xl z-[1000] animate-scale-in">
               <div class="font-mono font-semibold text-blue-300">{{ event.req.method }} {{ event.req.path }}</div>
               <div class="text-gray-300 font-mono mt-1">
                 <span class="text-gray-500">Status:</span>
@@ -56,7 +56,7 @@
                 {{ formatTimeAgo(event.req.ts) }}
               </div>
               <!-- Arrow -->
-              <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-gray-900 border-l-2 border-t-2 border-gray-500/50 rotate-45"></div>
+              <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-black border-l border-t border-gray-500/20 rotate-45"></div>
             </div>
           </div>
         </div>
