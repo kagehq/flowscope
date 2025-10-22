@@ -60,7 +60,6 @@
             </div>
           </div>
         </div>
-      </div>
 
       <!-- Time labels -->
       <div class="flex items-center justify-between text-xs text-gray-500 mt-2">
