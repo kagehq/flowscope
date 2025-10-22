@@ -438,11 +438,20 @@ function fmtTime(timestamp: number) {
                 {{ compareMode ? `Compare (${selectedForCompare.length}/2)` : 'Compare' }}
               </span>
             </button>
-            <button
-              @click="load"
-              :disabled="loading"
-              class="bg-gray-500/10 border flex items-center border-gray-500/10 text-white rounded-lg px-3 py-1.5 text-xs hover:bg-gray-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
+                    <button
+                      @click="toast.success('Test notification!')"
+                      class="bg-green-500/10 border flex items-center border-green-500/10 text-green-300 rounded-lg px-3 py-1.5 text-xs hover:bg-green-500/20 transition-all mr-2"
+                    >
+                      <svg class="w-3.5 h-3.5 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                      Test Toast
+                    </button>
+                    <button
+                      @click="load"
+                      :disabled="loading"
+                      class="bg-gray-500/10 border flex items-center border-gray-500/10 text-white rounded-lg px-3 py-1.5 text-xs hover:bg-gray-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
               <svg v-if="!loading" class="w-3.5 h-3.5 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
@@ -492,7 +501,7 @@ function fmtTime(timestamp: number) {
       <!-- Export & Share Tab -->
       <div v-if="activeTab === 'actions' && hasEvents" class="p-6 max-w-4xl">
         <h2 class="text-2xl font-bold text-white mb-6">Export & Share</h2>
-        
+
         <!-- Export Section -->
         <div class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-6 mb-6">
           <h3 class="text-lg font-bold text-white mb-4">Export Data</h3>
