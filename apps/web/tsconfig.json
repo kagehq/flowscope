@@ -1,0 +1,9 @@
+{
+  "extends": "./.nuxt/tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@flowscope/shared": ["../../packages/shared/src"]
+    }
+  }
+}
+

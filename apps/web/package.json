@@ -1,0 +1,23 @@
+{
+  "name": "@flowscope/web",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev --port 4320",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate"
+  },
+  "dependencies": {
+    "nuxt": "^3.12.3",
+    "socket.io-client": "^4.7.5",
+    "@flowscope/shared": "*"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.10",
+    "postcss": "^8.4.41",
+    "autoprefixer": "^10.4.20",
+    "typescript": "^5.4.5"
+  }
+}
+

@@ -1,0 +1,39 @@
+{
+  "name": "@flowscope/server",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "tsc && node dist/main.js",
+    "dev:watch": "tsc --watch",
+    "build": "tsc",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@flowscope/shared": "*",
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.4.20",
+    "@nestjs/websockets": "^10.0.0",
+    "@opentelemetry/api": "^1.8.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.49.1",
+    "@opentelemetry/resources": "^1.22.0",
+    "@opentelemetry/sdk-trace-base": "^1.22.0",
+    "@opentelemetry/semantic-conventions": "^1.22.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "http-proxy": "^1.18.1",
+    "socket.io": "^4.7.5",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^10.0.0",
+    "@nestjs/schematics": "^10.0.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.3",
+    "@types/http-proxy": "^1.17.14",
+    "@types/node": "^20.11.30",
+    "@types/node-fetch": "^2.6.13",
+    "@types/uuid": "^9.0.8",
+    "typescript": "^5.4.5"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "flowscope",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w @flowscope/server\" \"npm run dev -w @flowscope/web\"",
+    "build": "npm run build -w @flowscope/shared && npm run build -w @flowscope/server && npm run build -w @flowscope/web",
+    "build:shared": "npm run build -w @flowscope/shared",
+    "dev:server": "npm run dev -w @flowscope/server",
+    "dev:web": "npm run dev -w @flowscope/web",
+    "test:mock": "node test/mock-server.js",
+    "test:run": "node test/test-requests.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
+

@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  flowscope:
+    build: .
+    ports:
+      - "4317:4317"  # Proxy server
+      - "4320:4320"  # Dashboard
+    environment:
+      - PORT=4317
+      - UPSTREAM=http://host.docker.internal:3000  # Your upstream server
+      - RING_SIZE=2000
+      - BODY_PREVIEW_LIMIT=4096
+      # Uncomment for Arize integration:
+      # - ARIZE_ENDPOINT=http://host.docker.internal:6006/v1/traces
+      # - ARIZE_API_KEY=
+      # - ARIZE_SPACE_ID=default
+    restart: unless-stopped
+    # Use this if you want to connect to services on your host machine
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Optional: Include the mock server for testing
+  mock-server:
+    image: node:18-alpine
+    working_dir: /app
+    command: node test/mock-server.js
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./test:/app/test
+    profiles:
+      - testing  # Only run with: docker-compose --profile testing up
+
