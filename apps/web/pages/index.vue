@@ -39,6 +39,18 @@ watch(hasLLMRequests, (hasLLM) => {
   }
 });
 
+// Check if there are any events to export/share
+const hasEvents = computed(() => {
+  return events.value.length > 0;
+});
+
+// Auto-switch away from actions tab if no events
+watch(hasEvents, (hasEvts) => {
+  if (!hasEvts && activeTab.value === 'actions') {
+    activeTab.value = 'events';
+  }
+});
+
 const pathIncludes = ref('');
 const method = ref<string>('');
 const status = ref<string>('');
@@ -318,6 +330,7 @@ function fmtTime(timestamp: number) {
                     Flows
                   </button>
                   <button
+                    v-if="hasEvents"
                     @click="activeTab = 'actions'"
                     class="px-2.5 py-1 text-xs font-medium transition-all border rounded-lg"
                     :class="activeTab === 'actions'
@@ -421,7 +434,7 @@ function fmtTime(timestamp: number) {
       </div>
 
       <!-- Export & Share Tab -->
-      <div v-if="activeTab === 'actions'" class="p-6 max-w-4xl">
+      <div v-if="activeTab === 'actions' && hasEvents" class="p-6 max-w-4xl">
         <h2 class="text-2xl font-bold text-white mb-4">Export & Share</h2>
         <div class="space-y-4">
           <ActionBar :selectedEventId="expandedEventId ?? undefined" />
