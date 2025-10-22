@@ -23,6 +23,10 @@ const selectedForCompare = ref<string[]>([]);
 type ViewMode = 'fe' | 'be';
 const viewMode = ref<ViewMode>('fe');
 
+// Tab management
+type Tab = 'events' | 'cost' | 'flows' | 'actions';
+const activeTab = ref<Tab>('events');
+
 const pathIncludes = ref('');
 const method = ref<string>('');
 const status = ref<string>('');
@@ -329,8 +333,51 @@ function fmtTime(timestamp: number) {
 
       </header>
 
+      <!-- Tabs -->
+      <div class="border-b border-gray-500/10 px-6">
+        <nav class="flex gap-1">
+          <button
+            @click="activeTab = 'events'"
+            class="px-4 py-3 text-sm font-medium transition-all border-b-2"
+            :class="activeTab === 'events'
+              ? 'text-white border-blue-300'
+              : 'text-gray-400 hover:text-white border-transparent'"
+          >
+            Events
+            <span class="ml-2 text-xs bg-gray-500/5 px-2 py-0.5 rounded">{{ filtered.length }}</span>
+          </button>
+          <button
+            @click="activeTab = 'cost'"
+            class="px-4 py-3 text-sm font-medium transition-all border-b-2"
+            :class="activeTab === 'cost'
+              ? 'text-white border-yellow-300'
+              : 'text-gray-400 hover:text-white border-transparent'"
+          >
+            LLM Costs
+          </button>
+          <button
+            @click="activeTab = 'flows'"
+            class="px-4 py-3 text-sm font-medium transition-all border-b-2"
+            :class="activeTab === 'flows'
+              ? 'text-white border-purple-300'
+              : 'text-gray-400 hover:text-white border-transparent'"
+          >
+            Flows
+          </button>
+          <button
+            @click="activeTab = 'actions'"
+            class="px-4 py-3 text-sm font-medium transition-all border-b-2"
+            :class="activeTab === 'actions'
+              ? 'text-white border-green-300'
+              : 'text-gray-400 hover:text-white border-transparent'"
+          >
+            Export & Share
+          </button>
+        </nav>
+      </div>
+
       <!-- Error Display -->
-      <div v-if="error" class="mx-6 p-4 bg-red-500/10 border border-red-500/25 rounded-lg">
+      <div v-if="error" class="mx-6 my-4 p-4 bg-red-500/10 border border-red-500/25 rounded-lg">
         <div class="flex items-start gap-3">
           <svg class="w-5 h-5 text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -348,6 +395,50 @@ function fmtTime(timestamp: number) {
         </div>
       </div>
 
+      <!-- LLM Cost Dashboard Tab -->
+      <div v-if="activeTab === 'cost'" class="p-6">
+        <CostDashboard @select-event="(id) => { activeTab = 'events'; expandedEventId = id; }" />
+      </div>
+
+      <!-- Flow Visualizer Tab -->
+      <div v-if="activeTab === 'flows'" class="p-6">
+        <FlowVisualizer @select-event="(id) => { activeTab = 'events'; expandedEventId = id; }" />
+      </div>
+
+      <!-- Export & Share Tab -->
+      <div v-if="activeTab === 'actions'" class="p-6 max-w-4xl">
+        <h2 class="text-2xl font-bold text-white mb-4">🎭 Export & Share</h2>
+        <div class="space-y-4">
+          <ActionBar :selectedEventId="expandedEventId" />
+
+          <div class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-6 mt-6">
+            <h3 class="text-lg font-bold text-white mb-3">Available Actions</h3>
+            <ul class="space-y-3 text-gray-300">
+              <li class="flex items-start gap-3">
+                <span class="text-purple-300">🎭</span>
+                <div>
+                  <strong>Export Mock Server:</strong> Generate a working Node.js mock server from captured traffic with realistic timings and error rates
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="text-green-300">🔗</span>
+                <div>
+                  <strong>Share Session:</strong> Create a shareable link to captured requests (expires in 7 days)
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="text-blue-300">📂</span>
+                <div>
+                  <strong>View Saved Sessions:</strong> Access previously shared debugging sessions
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Events Tab -->
+      <div v-if="activeTab === 'events'">
        <!-- Search Bar -->
        <div class="relative">
          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -750,15 +841,15 @@ function fmtTime(timestamp: number) {
         class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         @click.self="selectedForCompare = []"
       >
-        <div class="bg-gray-800 border border-gray-500/25 rounded-lg max-w-7xl w-full max-h-[90vh] overflow-auto">
+        <div class="bg-black border border-gray-500/15 rounded-lg max-w-7xl w-full max-h-[90vh] overflow-auto">
           <!-- Header -->
-          <div class="sticky top-0 bg-gray-800 border-b border-gray-500/25 px-6 py-4 flex items-center justify-between">
+          <div class="sticky top-0 border-b border-gray-500/15 px-6 py-4 flex items-center justify-between">
             <h2 class="text-lg font-semibold text-white">Compare Requests</h2>
             <button
               @click="selectedForCompare = []"
               class="text-gray-400 hover:text-white transition-colors"
             >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -768,7 +859,7 @@ function fmtTime(timestamp: number) {
           <div class="grid grid-cols-2 gap-6 p-6">
             <!-- Left Request -->
             <div v-if="compareEvents.left" class="space-y-4">
-              <div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+              <div class="bg-blue-300/5 border border-blue-300/10 rounded-lg p-4">
                 <h3 class="text-sm font-semibold text-blue-300 mb-2">Request A</h3>
                 <div class="space-y-2">
                   <div class="flex items-center gap-2">
@@ -777,7 +868,7 @@ function fmtTime(timestamp: number) {
                   </div>
                   <div class="flex items-center gap-2">
                     <span class="text-xs text-gray-400">Status:</span>
-                    <span class="text-sm font-mono" :class="{
+                    <span class="text-sm font-mono text-blue-300" :class="{
                       'text-green-300': compareEvents.left.res?.status && compareEvents.left.res.status >= 200 && compareEvents.left.res.status < 300,
                       'text-red-300': compareEvents.left.res?.status && compareEvents.left.res.status >= 400
                     }">{{ compareEvents.left.res?.status || '—' }}</span>
@@ -789,17 +880,17 @@ function fmtTime(timestamp: number) {
                 </div>
               </div>
 
-              <div class="bg-gray-500/10 border border-gray-500/25 rounded-lg p-4">
+              <div class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-4">
                 <h4 class="text-xs font-semibold text-white mb-2">Path</h4>
                 <p class="text-sm font-mono text-gray-300 break-all">{{ compareEvents.left.req.path }}</p>
               </div>
 
-              <div class="bg-gray-500/10 border border-gray-500/25 rounded-lg p-4">
+              <div class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-4">
                 <h4 class="text-xs font-semibold text-white mb-2">Request Body</h4>
                 <JsonView :value="compareEvents.left.req.bodyPreview || 'No body'" />
               </div>
 
-              <div class="bg-gray-500/10 border border-gray-500/25 rounded-lg p-4">
+              <div class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-4">
                 <h4 class="text-xs font-semibold text-white mb-2">Response Body</h4>
                 <JsonView :value="compareEvents.left.res?.bodyPreview || 'No response'" />
               </div>
@@ -807,7 +898,7 @@ function fmtTime(timestamp: number) {
 
             <!-- Right Request -->
             <div v-if="compareEvents.right" class="space-y-4">
-              <div class="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+              <div class="bg-purple-300/5 border border-purple-300/10 rounded-lg p-4">
                 <h3 class="text-sm font-semibold text-purple-300 mb-2">Request B</h3>
                 <div class="space-y-2">
                   <div class="flex items-center gap-2">
@@ -816,7 +907,7 @@ function fmtTime(timestamp: number) {
                   </div>
                   <div class="flex items-center gap-2">
                     <span class="text-xs text-gray-400">Status:</span>
-                    <span class="text-sm font-mono" :class="{
+                    <span class="text-sm font-mono text-blue-300" :class="{
                       'text-green-300': compareEvents.right.res?.status && compareEvents.right.res.status >= 200 && compareEvents.right.res.status < 300,
                       'text-red-300': compareEvents.right.res?.status && compareEvents.right.res.status >= 400
                     }">{{ compareEvents.right.res?.status || '—' }}</span>
@@ -828,12 +919,12 @@ function fmtTime(timestamp: number) {
                 </div>
               </div>
 
-              <div class="bg-gray-500/10 border border-gray-500/25 rounded-lg p-4">
+              <div class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-4">
                 <h4 class="text-xs font-semibold text-white mb-2">Path</h4>
                 <p class="text-sm font-mono text-gray-300 break-all">{{ compareEvents.right.req.path }}</p>
               </div>
 
-              <div class="bg-gray-500/10 border border-gray-500/25 rounded-lg p-4">
+              <div class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-4">
                 <h4 class="text-xs font-semibold text-white mb-2">Request Body</h4>
                 <JsonView :value="compareEvents.right.req.bodyPreview || 'No body'" />
               </div>
@@ -846,6 +937,7 @@ function fmtTime(timestamp: number) {
           </div>
         </div>
       </div>
+      </div><!-- End Events Tab -->
     </div>
   </div>
 </template>

@@ -9,6 +9,7 @@ import { EventsGateway } from '../events/events.gateway';
 import { ArizeService } from '../arize/arize.service';
 import { redactHeaders, redactJson } from '../utils/redact';
 import { CapturedEvent, HttpMethod, BodyEncoding } from '@flowscope/shared';
+import { isLLMCall, extractLLMMetadata } from '../utils/llm';
 
 @Controller('proxy')
 export class ProxyController {
@@ -17,6 +18,38 @@ export class ProxyController {
     private events: EventsGateway,
     private arize: ArizeService,
   ) {}
+
+  private extractSessionId(req: Request): string | undefined {
+    // Try common session ID patterns
+    return (
+      req.headers['x-session-id'] as string ||
+      req.headers['x-session'] as string ||
+      req.headers['session-id'] as string ||
+      (req.headers['cookie'] as string)?.match(/session[_-]?id=([^;]+)/i)?.[1] ||
+      (req.headers['cookie'] as string)?.match(/sessionid=([^;]+)/i)?.[1]
+    );
+  }
+
+  private extractCorrelationId(req: Request): string | undefined {
+    // Try common correlation/trace ID patterns
+    return (
+      req.headers['x-correlation-id'] as string ||
+      req.headers['x-request-id'] as string ||
+      req.headers['x-trace-id'] as string ||
+      req.headers['correlation-id'] as string ||
+      req.headers['request-id'] as string
+    );
+  }
+
+  private extractUserId(req: Request): string | undefined {
+    // Try common user ID patterns
+    return (
+      req.headers['x-user-id'] as string ||
+      req.headers['x-user'] as string ||
+      req.headers['user-id'] as string ||
+      (req.headers['authorization'] as string)?.match(/user[_-]?id[=:]([^;,\s]+)/i)?.[1]
+    );
+  }
 
   @All('*')
   async handle(@Req() req: Request, @Res() res: Response) {
@@ -151,9 +184,34 @@ export class ProxyController {
           durationMs: finished - started,
         });
 
-        const event = this.store.get(id);
-        console.log('[Proxy] Event stored:', event?.req.method, event?.req.path, 'Status:', event?.res?.status);
+        let event = this.store.get(id);
+        
         if (event) {
+          // Extract LLM metadata if this is an LLM API call
+          if (isLLMCall(targetUrl)) {
+            try {
+              const reqBodyParsed = capturedReq.encoding === 'json' && capturedReq.bodyPreview
+                ? JSON.parse(capturedReq.bodyPreview)
+                : null;
+              const resBodyParsed = encoding === 'json' && bodyPreview
+                ? JSON.parse(bodyPreview)
+                : null;
+              
+              const llmMeta = extractLLMMetadata(targetUrl, reqBodyParsed, resBodyParsed);
+              if (llmMeta) {
+                event.llm = llmMeta;
+                console.log(`[Proxy] LLM call detected: ${llmMeta.provider} ${llmMeta.model} - Cost: $${llmMeta.cost?.toFixed(4)}`);
+              }
+            } catch (err) {
+              console.error('[Proxy] Failed to extract LLM metadata:', err);
+            }
+          }
+          
+          // Extract session/correlation IDs for flow tracking
+          event.sessionId = this.extractSessionId(req);
+          event.correlationId = this.extractCorrelationId(req);
+          event.userId = this.extractUserId(req);
+          
           this.events.emitNew(event);
           this.arize.exportEvent(event).catch(() => {});
         }

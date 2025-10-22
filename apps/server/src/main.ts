@@ -9,36 +9,36 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
   });
-  
+
   // CORS: Allow dashboard and any localhost origins in development
   const isDev = process.env.NODE_ENV !== 'production';
-  
+
   app.use(
     cors({
       origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps, curl, Postman)
         if (!origin) return callback(null, true);
-        
+
         // In development: Allow all localhost/127.0.0.1 origins
         if (isDev && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
           return callback(null, true);
         }
-        
+
         // Allow configured origins (comma-separated in env)
-        const allowedOrigins = process.env.ALLOWED_ORIGINS 
+        const allowedOrigins = process.env.ALLOWED_ORIGINS
           ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
           : ['http://localhost:4320'];
-        
+
         if (allowedOrigins.includes(origin)) {
           return callback(null, true);
         }
-        
+
         callback(new Error('Not allowed by CORS'));
       },
       credentials: true,
     })
   );
-  
+
   // Enable body parsing ONLY for non-proxy routes
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.path.startsWith('/proxy')) {
@@ -51,7 +51,7 @@ async function bootstrap() {
       urlencoded({ extended: true, limit: '50mb' })(req, res, next);
     });
   });
-  
+
   await app.listen(Number(process.env.PORT || 4317));
   console.log(`[flowscope] server running on port :${process.env.PORT || 4317}`);
   if (isDev) {

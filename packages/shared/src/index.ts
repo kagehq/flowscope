@@ -29,10 +29,26 @@ export interface CapturedResponse {
   durationMs?: number;
 }
 
+export interface LLMMetadata {
+  provider: string;
+  model?: string;
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+  cost?: number;
+  temperature?: number;
+  maxTokens?: number;
+  finishReason?: string;
+}
+
 export interface CapturedEvent {
   id: string;
   req: CapturedRequest;
   res?: CapturedResponse;
+  llm?: LLMMetadata;
+  sessionId?: string;
+  correlationId?: string;
+  userId?: string;
 }
 
 export interface CaptureFilter {
