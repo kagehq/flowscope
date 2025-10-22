@@ -8,7 +8,7 @@ import type { CapturedEvent } from '@flowscope/shared';
 const toast = useToast();
 
 useHead({
-  title: 'FlowScope - A local, ephemeral HTTP request and response viewer',
+  title: 'Flowscope - A local, ephemeral HTTP request and response viewer',
 });
 
 const api = useApiBase();
@@ -341,6 +341,15 @@ function fmtTime(timestamp: number) {
   const date = new Date(timestamp);
   return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
+
+function tryParseJSON(value: string | undefined): any {
+  if (!value) return {};
+  try {
+    return JSON.parse(value);
+  } catch {
+    return { _raw: value };
+  }
+}
 </script>
 
 <template>
@@ -438,20 +447,11 @@ function fmtTime(timestamp: number) {
                 {{ compareMode ? `Compare (${selectedForCompare.length}/2)` : 'Compare' }}
               </span>
             </button>
-                    <button
-                      @click="toast.success('Test notification!')"
-                      class="bg-green-500/10 border flex items-center border-green-500/10 text-green-300 rounded-lg px-3 py-1.5 text-xs hover:bg-green-500/20 transition-all mr-2"
-                    >
-                      <svg class="w-3.5 h-3.5 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                      </svg>
-                      Test Toast
-                    </button>
-                    <button
-                      @click="load"
-                      :disabled="loading"
-                      class="bg-gray-500/10 border flex items-center border-gray-500/10 text-white rounded-lg px-3 py-1.5 text-xs hover:bg-gray-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                    >
+            <button
+              @click="load"
+              :disabled="loading"
+              class="bg-gray-500/10 border flex items-center border-gray-500/10 text-white rounded-lg px-3 py-1.5 text-xs hover:bg-gray-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
               <svg v-if="!loading" class="w-3.5 h-3.5 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
@@ -904,97 +904,116 @@ function fmtTime(timestamp: number) {
                   <!-- FE View: Response-first layout -->
                   <template v-if="viewMode === 'fe'">
                     <!-- Response Body (highlighted for FE) -->
-                    <div v-if="ev.res?.bodyPreview" class="bg-blue-500/5 border-2 border-blue-500/20 rounded-lg p-3">
-                      <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-xs font-semibold text-blue-300">Response Body</h3>
-                        <div class="flex items-center gap-2 text-xs text-gray-400">
-                          <span v-if="ev.res.bodyBytes">{{ ev.res.bodyBytes }} bytes</span>
-                        </div>
-                      </div>
+                    <CollapsibleSection
+                      v-if="ev.res?.bodyPreview"
+                      title="Response Body"
+                      :badge="ev.res.bodyBytes ? `${ev.res.bodyBytes} bytes` : undefined"
+                      :default-expanded="true"
+                    >
                       <JsonView :value="ev.res.bodyPreview" />
-                    </div>
+                    </CollapsibleSection>
 
                     <!-- Response Headers -->
-                    <div v-if="ev.res?.headers" class="bg-gray-500/5 rounded-lg p-3 border border-gray-500/10">
-                      <h3 class="text-xs font-semibold text-white mb-2">Response Headers</h3>
+                    <CollapsibleSection
+                      v-if="ev.res?.headers"
+                      title="Response Headers"
+                      :badge="`${Object.keys(ev.res.headers).length} headers`"
+                    >
                       <div class="space-y-1 font-mono text-xs">
                         <div v-for="([key, val]) in Object.entries(ev.res.headers)" :key="key" class="flex gap-2">
                           <span class="text-blue-300">{{ key }}:</span>
                           <span class="text-gray-300 break-all">{{ val }}</span>
                         </div>
                       </div>
-                    </div>
+                    </CollapsibleSection>
 
                     <!-- Request Body -->
-                    <div v-if="ev.req.bodyPreview" class="bg-gray-500/5 rounded-lg p-3 border border-gray-500/10">
-                      <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-xs font-semibold text-white">Request Body</h3>
-                        <div class="flex items-center gap-2 text-xs text-gray-400">
-                          <span v-if="ev.req.encoding" class="px-2 py-0.5 bg-gray-500/20 rounded">{{ ev.req.encoding }}</span>
-                          <span v-if="ev.req.bodyBytes">{{ ev.req.bodyBytes }} bytes</span>
-                        </div>
-                      </div>
+                    <CollapsibleSection
+                      v-if="ev.req.bodyPreview"
+                      title="Request Body"
+                      :badge="ev.req.bodyBytes ? `${ev.req.bodyBytes} bytes` : undefined"
+                    >
                       <JsonView :value="ev.req.bodyPreview" />
-                    </div>
-                  </template>
+                    </CollapsibleSection>
 
-                  <!-- BE View: Request-first layout -->
-                  <template v-else>
-                    <!-- Query Parameters (highlighted for BE) -->
-                    <div v-if="ev.req.query && Object.keys(ev.req.query).length > 0" class="bg-amber-500/5 border-2 border-amber-500/20 rounded-lg p-3">
-                      <h3 class="text-xs font-semibold text-amber-300 mb-2">Query Parameters</h3>
-                      <div class="space-y-1 font-mono text-xs">
-                        <div v-for="([key, val]) in Object.entries(ev.req.query)" :key="key" class="flex gap-2">
-                          <span class="text-blue-300">{{ key }}:</span>
-                          <span class="text-gray-300">{{ val }}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Request Headers (highlighted for BE) -->
-                    <div class="bg-amber-500/5 border-2 border-amber-500/20 rounded-lg p-3">
-                      <h3 class="text-xs font-semibold text-amber-300 mb-2">Request Headers</h3>
+                    <!-- Request Headers -->
+                    <CollapsibleSection
+                      v-if="ev.req.headers"
+                      title="Request Headers"
+                      :badge="`${Object.keys(ev.req.headers).length} headers`"
+                    >
                       <div class="space-y-1 font-mono text-xs">
                         <div v-for="([key, val]) in Object.entries(ev.req.headers || {})" :key="key" class="flex gap-2">
                           <span class="text-blue-300">{{ key }}:</span>
                           <span class="text-gray-300 break-all">{{ val }}</span>
                         </div>
                       </div>
-                    </div>
+                    </CollapsibleSection>
+                  </template>
+
+                  <!-- BE View: Request-first layout -->
+                  <template v-else>
+                    <!-- Query Parameters (highlighted for BE) -->
+                    <CollapsibleSection
+                      v-if="ev.req.query && Object.keys(ev.req.query).length > 0"
+                      title="Query Parameters"
+                      :badge="`${Object.keys(ev.req.query).length} params`"
+                      :default-expanded="true"
+                    >
+                      <div class="space-y-1 font-mono text-xs">
+                        <div v-for="([key, val]) in Object.entries(ev.req.query)" :key="key" class="flex gap-2">
+                          <span class="text-blue-300">{{ key }}:</span>
+                          <span class="text-gray-300">{{ val }}</span>
+                        </div>
+                      </div>
+                    </CollapsibleSection>
+
+                    <!-- Request Headers (highlighted for BE) -->
+                    <CollapsibleSection
+                      title="Request Headers"
+                      :badge="`${Object.keys(ev.req.headers || {}).length} headers`"
+                      :default-expanded="true"
+                    >
+                      <div class="space-y-1 font-mono text-xs">
+                        <div v-for="([key, val]) in Object.entries(ev.req.headers || {})" :key="key" class="flex gap-2">
+                          <span class="text-blue-300">{{ key }}:</span>
+                          <span class="text-gray-300 break-all">{{ val }}</span>
+                        </div>
+                      </div>
+                    </CollapsibleSection>
 
                     <!-- Request Body -->
-                    <div v-if="ev.req.bodyPreview" class="bg-gray-500/5 rounded-lg p-3 border border-gray-500/10">
-                      <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-xs font-semibold text-white">Request Body</h3>
-                        <div class="flex items-center gap-2 text-xs text-gray-400">
-                          <span v-if="ev.req.encoding" class="px-2 py-0.5 bg-gray-500/20 rounded">{{ ev.req.encoding }}</span>
-                          <span v-if="ev.req.bodyBytes">{{ ev.req.bodyBytes }} bytes</span>
-                        </div>
-                      </div>
+                    <CollapsibleSection
+                      v-if="ev.req.bodyPreview"
+                      title="Request Body"
+                      :badge="ev.req.bodyBytes ? `${ev.req.bodyBytes} bytes` : undefined"
+                      :default-expanded="true"
+                    >
                       <JsonView :value="ev.req.bodyPreview" />
-                    </div>
+                    </CollapsibleSection>
 
                     <!-- Response Body -->
-                    <div v-if="ev.res?.bodyPreview" class="bg-gray-500/5 rounded-lg p-3 border border-gray-500/10">
-                      <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-xs font-semibold text-white">Response Body</h3>
-                        <div class="flex items-center gap-2 text-xs text-gray-400">
-                          <span v-if="ev.res.bodyBytes">{{ ev.res.bodyBytes }} bytes</span>
-                        </div>
-                      </div>
+                    <CollapsibleSection
+                      v-if="ev.res?.bodyPreview"
+                      title="Response Body"
+                      :badge="ev.res.bodyBytes ? `${ev.res.bodyBytes} bytes` : undefined"
+                    >
                       <JsonView :value="ev.res.bodyPreview" />
-                    </div>
+                    </CollapsibleSection>
 
                     <!-- Response Headers -->
-                    <div v-if="ev.res?.headers" class="bg-gray-500/5 rounded-lg p-3 border border-gray-500/10">
-                      <h3 class="text-xs font-semibold text-white mb-2">Response Headers</h3>
+                    <CollapsibleSection
+                      v-if="ev.res?.headers"
+                      title="Response Headers"
+                      :badge="`${Object.keys(ev.res.headers).length} headers`"
+                    >
                       <div class="space-y-1 font-mono text-xs">
                         <div v-for="([key, val]) in Object.entries(ev.res.headers)" :key="key" class="flex gap-2">
                           <span class="text-blue-300">{{ key }}:</span>
                           <span class="text-gray-300 break-all">{{ val }}</span>
                         </div>
                       </div>
-                    </div>
+                    </CollapsibleSection>
                   </template>
                 </div>
               </div>
@@ -1011,7 +1030,7 @@ function fmtTime(timestamp: number) {
       >
         <div class="bg-black border border-gray-500/15 rounded-lg max-w-7xl w-full max-h-[90vh] overflow-auto">
           <!-- Header -->
-          <div class="sticky top-0 border-b border-gray-500/15 px-6 py-4 flex items-center justify-between">
+          <div class="sticky top-0 bg-black border-b border-gray-500/15 px-6 py-4 flex items-center justify-between z-10">
             <h2 class="text-lg font-semibold text-white">Compare Requests</h2>
             <button
               @click="selectedForCompare = []"
@@ -1021,6 +1040,69 @@ function fmtTime(timestamp: number) {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
+          </div>
+
+          <!-- Diff Highlights Section -->
+          <div class="border-b border-gray-500/15 px-6 py-4 bg-gray-500/5">
+            <h3 class="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+              <svg class="w-4 h-4 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+              Differences Detected
+            </h3>
+
+            <div class="space-y-4">
+              <!-- Headers Diff -->
+              <div v-if="compareEvents.left && compareEvents.right" class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-4">
+                <h4 class="text-xs font-semibold text-white mb-2 flex items-center gap-2">
+                  <span>Request Headers</span>
+                  <span class="text-gray-500 font-normal">(A → B)</span>
+                </h4>
+                <DiffViewer
+                  :left="compareEvents.left.req.headers"
+                  :right="compareEvents.right.req.headers"
+                />
+              </div>
+
+              <!-- Query Params Diff -->
+              <div v-if="compareEvents.left && compareEvents.right && (compareEvents.left.req.query || compareEvents.right.req.query)" class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-4">
+                <h4 class="text-xs font-semibold text-white mb-2 flex items-center gap-2">
+                  <span>Query Parameters</span>
+                  <span class="text-gray-500 font-normal">(A → B)</span>
+                </h4>
+                <DiffViewer
+                  :left="compareEvents.left.req.query || {}"
+                  :right="compareEvents.right.req.query || {}"
+                />
+              </div>
+
+              <!-- Request Body Diff -->
+              <div v-if="compareEvents.left && compareEvents.right && (compareEvents.left.req.bodyPreview || compareEvents.right.req.bodyPreview)" class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-4">
+                <h4 class="text-xs font-semibold text-white mb-2 flex items-center gap-2">
+                  <span>Request Body</span>
+                  <span class="text-gray-500 font-normal">(A → B)</span>
+                </h4>
+                <DiffViewer
+                  :left="tryParseJSON(compareEvents.left.req.bodyPreview)"
+                  :right="tryParseJSON(compareEvents.right.req.bodyPreview)"
+                />
+              </div>
+            </div>
+
+            <div class="mt-3 flex items-center gap-4 text-xs">
+              <div class="flex items-center gap-1">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span class="text-gray-400">Added</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                <span class="text-gray-400">Removed</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                <span class="text-gray-400">Changed</span>
+              </div>
+            </div>
           </div>
 
           <!-- Comparison Grid -->
