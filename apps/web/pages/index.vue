@@ -29,12 +29,21 @@ type ViewMode = 'fe' | 'be';
 const viewMode = ref<ViewMode>('fe');
 
 // Tab management
-type Tab = 'events' | 'cost' | 'flows' | 'actions';
+type Tab = 'events' | 'errors' | 'cost' | 'flows' | 'actions';
 const activeTab = ref<Tab>('events');
 
 // Check if there are any LLM requests
 const hasLLMRequests = computed(() => {
   return events.value.some(event => event.llm);
+});
+
+// Check if there are any errors
+const hasErrors = computed(() => {
+  return events.value.some(event => event.res?.status && event.res.status >= 400);
+});
+
+const errorCount = computed(() => {
+  return events.value.filter(event => event.res?.status && event.res.status >= 400).length;
 });
 
 // Auto-switch away from cost tab if no LLM requests
@@ -135,6 +144,30 @@ function toggleSelectForCompare(eventId: string) {
   }
 }
 
+function jumpToNextError() {
+  const errorEvents = filtered.value.filter(e => e.res?.status && e.res.status >= 400);
+  if (errorEvents.length === 0) return;
+  
+  // Find current expanded error if any
+  const currentIndex = expandedEventId.value
+    ? errorEvents.findIndex(e => e.id === expandedEventId.value)
+    : -1;
+  
+  // Jump to next error (or first if none/last is expanded)
+  const nextIndex = (currentIndex + 1) % errorEvents.length;
+  expandedEventId.value = errorEvents[nextIndex].id;
+  
+  // Scroll to the event
+  setTimeout(() => {
+    const element = document.getElementById(`event-${errorEvents[nextIndex].id}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 100);
+  
+  toast.info(`Error ${nextIndex + 1}/${errorEvents.length}`);
+}
+
 const compareEvents = computed(() => {
   if (selectedForCompare.value.length !== 2) return null;
   return {
@@ -210,6 +243,17 @@ function handleExportCSV() {
     toast.success('Exported as CSV');
   } catch (error) {
     toast.error('Failed to export CSV');
+  }
+}
+
+function handleExportErrors() {
+  try {
+    const errorEvents = events.value.filter(e => e.res?.status && e.res.status >= 400);
+    const csv = exportAsCSV(errorEvents);
+    downloadFile(csv, `flowscope-errors-${Date.now()}.csv`, 'text/csv');
+    toast.success(`Exported ${errorEvents.length} error(s)`);
+  } catch (error) {
+    toast.error('Failed to export errors');
   }
 }
 
@@ -438,6 +482,19 @@ function tryParseJSON(value: string | undefined): any {
                     <!-- <span class="ml-2 text-xs bg-gray-500/5 px-2 py-0.5 rounded">{{ filtered.length }}</span> -->
                   </button>
                   <button
+                    v-if="hasErrors"
+                    @click="activeTab = 'errors'"
+                    class="px-2.5 py-1 text-xs font-medium transition-all border rounded-lg"
+                    :class="activeTab === 'errors'
+                      ? 'text-white border-red-500/20 bg-red-500/10'
+                      : 'text-gray-400 hover:text-white border-transparent'"
+                  >
+                    <span class="flex items-center gap-1.5">
+                      Errors
+                      <span v-if="errorCount > 0" class="bg-red-500/20 text-red-300 px-1.5 py-0.5 rounded text-xs font-bold">{{ errorCount }}</span>
+                    </span>
+                  </button>
+                  <button
                     v-if="hasLLMRequests"
                     @click="activeTab = 'cost'"
                     class="px-2.5 py-1 text-xs font-medium transition-all border rounded-lg"
@@ -509,6 +566,19 @@ function tryParseJSON(value: string | undefined): any {
                 {{ compareMode ? `Compare (${selectedForCompare.length}/2)` : 'Compare' }}
               </span>
             </button>
+
+            <button
+              v-if="hasErrors"
+              @click="jumpToNextError"
+              class="bg-red-500/10 border flex items-center border-red-500/20 text-red-300 rounded-lg px-3 py-1.5 text-xs hover:bg-red-500/20 transition-all"
+            >
+              <svg class="w-3.5 h-3.5 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span class="hidden sm:inline">
+                Next Error
+              </span>
+            </button>
             <button
               @click="load"
               :disabled="loading"
@@ -548,6 +618,16 @@ function tryParseJSON(value: string | undefined): any {
             </svg>
           </button>
         </div>
+      </div>
+
+      <!-- Error Analysis Tab -->
+      <div v-if="activeTab === 'errors' && hasErrors" class="p-6">
+        <ErrorSummary
+          :events="events"
+          @jump-to-error="(id) => { activeTab = 'events'; expandedEventId = id; }"
+          @filter-5xx="() => { activeTab = 'events'; activeFilter = 'errors'; }"
+          @export-errors="handleExportErrors"
+        />
       </div>
 
       <!-- LLM Cost Dashboard Tab -->
@@ -778,8 +858,8 @@ function tryParseJSON(value: string | undefined): any {
           <div class="text-xs text-gray-400">
             {{ filtered.length }} / {{ events.length }} requests
           </div>
-        </div>
-      </div>
+         </div>
+       </div>
 
       <section class="pb-5 px-0">
         <!-- Events List -->
@@ -814,11 +894,11 @@ function tryParseJSON(value: string | undefined): any {
                 <div class="text-xs text-gray-400 space-y-1">
                   <p>→ Point your app to <code class="bg-gray-500/10 px-1.5 py-0.5 rounded">http://localhost:4317/proxy/...</code></p>
                   <p>→ Or try our mock server: <code class="bg-gray-500/10 px-1.5 py-0.5 rounded">npm run test:mock</code></p>
-                </div>
+            </div>
                 <button @click="load" class="bg-blue-500/20 border border-blue-500/30 text-blue-300 hover:bg-blue-500/30 rounded-lg px-4 py-2 text-sm transition">
                   Refresh Events
-                </button>
-              </div>
+              </button>
+            </div>
             </template>
           </EmptyState>
 
@@ -827,6 +907,7 @@ function tryParseJSON(value: string | undefined): any {
             <li
               v-for="ev in filtered"
               :key="ev.id"
+              :id="`event-${ev.id}`"
               class="transition-all duration-150"
             >
               <div class="w-full flex items-center gap-2 border-b border-gray-500/15"
@@ -847,7 +928,7 @@ function tryParseJSON(value: string | undefined): any {
                   />
                 </div>
 
-                <button
+              <button
                   @click="compareMode ? toggleSelectForCompare(ev.id) : toggleEvent(ev.id)"
                   @mouseenter="hoveredEventId = ev.id"
                   @mouseleave="hoveredEventId = null"
@@ -858,51 +939,51 @@ function tryParseJSON(value: string | undefined): any {
                 >
                   <!-- Tooltip -->
                   <RequestTooltip :event="ev" :show="hoveredEventId === ev.id && !expandedEventId" />
-                  <!-- Duration -->
+                <!-- Duration -->
                   <div class="text-sm font-mono w-16 shrink-0 text-gray-500">
-                    {{ fmtMs(ev.res?.durationMs) }}
-                  </div>
+                  {{ fmtMs(ev.res?.durationMs) }}
+                </div>
 
                   <!-- Status Code (highlighted in FE view) -->
-                  <div class="shrink-0 w-12">
+                <div class="shrink-0 w-12">
                     <span class="font-semibold text-sm font-mono transition-all" :class="{
-                      'text-green-300': ev.res?.status && ev.res.status >= 200 && ev.res.status < 300,
-                      'text-yellow-300': ev.res?.status && ev.res.status >= 300 && ev.res.status < 400,
-                      'text-orange-300': ev.res?.status && ev.res.status >= 400 && ev.res.status < 500,
-                      'text-red-300': ev.res?.status && ev.res.status >= 500,
-                      'text-gray-500': !ev.res?.status
-                    }">
-                      {{ ev.res?.status ?? '—' }}
-                    </span>
-                  </div>
+                    'text-green-300': ev.res?.status && ev.res.status >= 200 && ev.res.status < 300,
+                    'text-yellow-300': ev.res?.status && ev.res.status >= 300 && ev.res.status < 400,
+                    'text-orange-300': ev.res?.status && ev.res.status >= 400 && ev.res.status < 500,
+                    'text-red-300': ev.res?.status && ev.res.status >= 500,
+                    'text-gray-500': !ev.res?.status
+                  }">
+                    {{ ev.res?.status ?? '—' }}
+                  </span>
+                </div>
 
-                  <!-- Method -->
-                  <div class="shrink-0 w-20">
+                <!-- Method -->
+                <div class="shrink-0 w-20">
                     <MethodBadge :method="ev.req.method" />
-                  </div>
+                </div>
 
-                  <!-- Path -->
+                <!-- Path -->
                   <div class="min-w-0">
-                    <p class="text-gray-300 text-sm truncate group-hover:text-white transition-colors">
-                      {{ ev.req.path }}
-                    </p>
-                  </div>
+                  <p class="text-gray-300 text-sm truncate group-hover:text-white transition-colors">
+                    {{ ev.req.path }}
+                  </p>
+                </div>
 
                   <!-- Spacer to push arrow to the right -->
                   <div class="flex-1"></div>
 
-                  <!-- Expand Icon -->
+                <!-- Expand Icon -->
                   <div v-if="!compareMode" class="text-gray-500 shrink-0">
-                    <svg
-                      class="w-4 h-4 transition-transform duration-200"
-                      :class="{ 'rotate-180': expandedEventId === ev.id }"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
+                  <svg
+                    class="w-4 h-4 transition-transform duration-200"
+                    :class="{ 'rotate-180': expandedEventId === ev.id }"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </button>
               </div>
 
@@ -1001,18 +1082,18 @@ function tryParseJSON(value: string | undefined): any {
                       <JsonView :value="ev.req.bodyPreview" />
                     </CollapsibleSection>
 
-                    <!-- Request Headers -->
+                  <!-- Request Headers -->
                     <CollapsibleSection
                       v-if="ev.req.headers"
                       title="Request Headers"
                       :badge="`${Object.keys(ev.req.headers).length} headers`"
                     >
-                      <div class="space-y-1 font-mono text-xs">
-                        <div v-for="([key, val]) in Object.entries(ev.req.headers || {})" :key="key" class="flex gap-2">
-                          <span class="text-blue-300">{{ key }}:</span>
-                          <span class="text-gray-300 break-all">{{ val }}</span>
-                        </div>
+                    <div class="space-y-1 font-mono text-xs">
+                      <div v-for="([key, val]) in Object.entries(ev.req.headers || {})" :key="key" class="flex gap-2">
+                        <span class="text-blue-300">{{ key }}:</span>
+                        <span class="text-gray-300 break-all">{{ val }}</span>
                       </div>
+                    </div>
                     </CollapsibleSection>
                   </template>
 
@@ -1029,7 +1110,7 @@ function tryParseJSON(value: string | undefined): any {
                         <div v-for="([key, val]) in Object.entries(ev.req.query)" :key="key" class="flex gap-2">
                           <span class="text-blue-300">{{ key }}:</span>
                           <span class="text-gray-300">{{ val }}</span>
-                        </div>
+                  </div>
                       </div>
                     </CollapsibleSection>
 
@@ -1043,8 +1124,8 @@ function tryParseJSON(value: string | undefined): any {
                         <div v-for="([key, val]) in Object.entries(ev.req.headers || {})" :key="key" class="flex gap-2">
                           <span class="text-blue-300">{{ key }}:</span>
                           <span class="text-gray-300 break-all">{{ val }}</span>
-                        </div>
                       </div>
+                    </div>
                     </CollapsibleSection>
 
                     <!-- Request Body -->
@@ -1054,7 +1135,7 @@ function tryParseJSON(value: string | undefined): any {
                       :badge="ev.req.bodyBytes ? `${ev.req.bodyBytes} bytes` : undefined"
                       :default-expanded="true"
                     >
-                      <JsonView :value="ev.req.bodyPreview" />
+                    <JsonView :value="ev.req.bodyPreview" />
                     </CollapsibleSection>
 
                     <!-- Response Body -->
@@ -1066,21 +1147,21 @@ function tryParseJSON(value: string | undefined): any {
                       <JsonView :value="ev.res.bodyPreview" />
                     </CollapsibleSection>
 
-                    <!-- Response Headers -->
+                  <!-- Response Headers -->
                     <CollapsibleSection
                       v-if="ev.res?.headers"
                       title="Response Headers"
                       :badge="`${Object.keys(ev.res.headers).length} headers`"
                     >
-                      <div class="space-y-1 font-mono text-xs">
-                        <div v-for="([key, val]) in Object.entries(ev.res.headers)" :key="key" class="flex gap-2">
-                          <span class="text-blue-300">{{ key }}:</span>
-                          <span class="text-gray-300 break-all">{{ val }}</span>
-                        </div>
+                    <div class="space-y-1 font-mono text-xs">
+                      <div v-for="([key, val]) in Object.entries(ev.res.headers)" :key="key" class="flex gap-2">
+                        <span class="text-blue-300">{{ key }}:</span>
+                        <span class="text-gray-300 break-all">{{ val }}</span>
                       </div>
+                    </div>
                     </CollapsibleSection>
                   </template>
-                </div>
+                  </div>
               </div>
             </li>
           </ul>
@@ -1105,7 +1186,7 @@ function tryParseJSON(value: string | undefined): any {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-          </div>
+                      </div>
 
           <!-- Diff Highlights Section -->
           <div class="border-b border-gray-500/15 px-6 py-4 bg-gray-500/5">
@@ -1127,7 +1208,7 @@ function tryParseJSON(value: string | undefined): any {
                   :left="compareEvents.left.req.headers"
                   :right="compareEvents.right.req.headers"
                 />
-              </div>
+                    </div>
 
               <!-- Query Params Diff -->
               <div v-if="compareEvents.left && compareEvents.right && (compareEvents.left.req.query || compareEvents.right.req.query)" class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-4">
@@ -1139,7 +1220,7 @@ function tryParseJSON(value: string | undefined): any {
                   :left="compareEvents.left.req.query || {}"
                   :right="compareEvents.right.req.query || {}"
                 />
-              </div>
+                  </div>
 
               <!-- Request Body Diff -->
               <div v-if="compareEvents.left && compareEvents.right && (compareEvents.left.req.bodyPreview || compareEvents.right.req.bodyPreview)" class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-4">
@@ -1151,8 +1232,8 @@ function tryParseJSON(value: string | undefined): any {
                   :left="tryParseJSON(compareEvents.left.req.bodyPreview)"
                   :right="tryParseJSON(compareEvents.right.req.bodyPreview)"
                 />
+                </div>
               </div>
-            </div>
 
             <div class="mt-3 flex items-center gap-4 text-xs">
               <div class="flex items-center gap-1">

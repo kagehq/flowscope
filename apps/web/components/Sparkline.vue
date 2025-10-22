@@ -43,14 +43,14 @@ const props = withDefaults(defineProps<{
 
 const pointsArray = computed(() => {
   if (props.data.length === 0) return [];
-  
+
   const max = Math.max(...props.data);
   const min = Math.min(...props.data);
-  
+
   // Add padding to prevent flat lines at edges
   const padding = props.height * 0.1;
   const availableHeight = props.height - (padding * 2);
-  
+
   // If all values are the same, show a horizontal line in the middle
   const range = max - min;
   if (range === 0) {
@@ -60,7 +60,7 @@ const pointsArray = computed(() => {
       return { x, y };
     });
   }
-  
+
   return props.data.map((value, index) => {
     const x = (index / (props.data.length - 1)) * props.width;
     const normalizedValue = (value - min) / range;
