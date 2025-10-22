@@ -1,6 +1,8 @@
 import { Controller, All, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { createProxyServer } from 'http-proxy';
+import * as http from 'http';
+import * as https from 'https';
+import { URL } from 'url';
 import { v4 as uuid } from 'uuid';
 import { CaptureStore } from '../store/capture.store';
 import { EventsGateway } from '../events/events.gateway';
@@ -8,44 +10,38 @@ import { ArizeService } from '../arize/arize.service';
 import { redactHeaders, redactJson } from '../utils/redact';
 import { CapturedEvent, HttpMethod, BodyEncoding } from '@flowscope/shared';
 
-const proxy = createProxyServer({ selfHandleResponse: true });
-
 @Controller('proxy')
 export class ProxyController {
   constructor(
     private store: CaptureStore,
     private events: EventsGateway,
     private arize: ArizeService,
-  ) {
-    proxy.on('error', (_err, _req: any, res: any) => {
-      res.writeHead(502, { 'Content-Type': 'text/plain' });
-      res.end('Proxy error');
-    });
-  }
+  ) {}
 
   @All('*')
   async handle(@Req() req: Request, @Res() res: Response) {
     const id = uuid();
     const upstream = process.env.UPSTREAM || 'http://localhost:3000';
 
-    // Debug logging
-    console.log('[Proxy] req.originalUrl:', req.originalUrl);
-    console.log('[Proxy] req.path:', req.path);
-    console.log('[Proxy] req.url:', req.url);
-
     // Extract the path after /proxy
     const targetPath = (req.url || req.originalUrl).replace(/^\/proxy/, '');
     const targetUrl = upstream + targetPath;
 
-    console.log('[Proxy] Target Path:', targetPath);
     console.log('[Proxy] Target URL:', targetUrl);
 
     const started = Date.now();
 
+    // Buffer the request body
     const reqChunks: Buffer[] = [];
     req.on('data', (chunk: any) => reqChunks.push(Buffer.from(chunk)));
 
+    await new Promise<void>((resolve) => {
+      req.on('end', () => resolve());
+    });
+
+    const reqBody = Buffer.concat(reqChunks);
     const headers = redactHeaders(req.headers as any);
+    
     const capturedReq: CapturedEvent['req'] = {
       id,
       ts: started,
@@ -56,84 +52,86 @@ export class ProxyController {
       headers: Object.fromEntries(
         Object.entries(headers).map(([k, v]) => [k, String(v)])
       ),
-      bodyBytes: 0,
+      bodyBytes: reqBody.length,
       bodyPreview: undefined,
       encoding: undefined,
     };
 
-    req.on('end', () => {
-      const body = Buffer.concat(reqChunks);
-      capturedReq.bodyBytes = body.length;
-      const contentType = (req.headers['content-type'] || '').toString();
-      const limit = Number(process.env.BODY_PREVIEW_LIMIT || 4096);
+    // Capture request body
+    const contentType = (req.headers['content-type'] || '').toString();
+    const limit = Number(process.env.BODY_PREVIEW_LIMIT || 4096);
 
-      if (body.length) {
-        if (contentType.includes('application/json')) {
-          try {
-            const json = JSON.parse(body.toString('utf8'));
-            capturedReq.bodyPreview = JSON.stringify(redactJson(json)).slice(0, limit);
-            capturedReq.encoding = 'json';
-          } catch {
-            capturedReq.bodyPreview = body.toString('utf8').slice(0, limit);
-            capturedReq.encoding = 'text';
-          }
-        } else {
-          capturedReq.bodyPreview = body.toString('utf8').slice(0, limit);
+    if (reqBody.length) {
+      if (contentType.includes('application/json')) {
+        try {
+          const json = JSON.parse(reqBody.toString('utf8'));
+          capturedReq.bodyPreview = JSON.stringify(redactJson(json)).slice(0, limit);
+          capturedReq.encoding = 'json';
+        } catch {
+          capturedReq.bodyPreview = reqBody.toString('utf8').slice(0, limit);
           capturedReq.encoding = 'text';
         }
-      }
-
-      this.store.add({ id, req: capturedReq });
-    });
-
-    proxy.web(req, res, { target: targetUrl, changeOrigin: true });
-
-    proxy.once('proxyRes', (proxyRes) => {
-      const chunks: Buffer[] = [];
-
-      // Debug logging
-      console.log(`[Proxy] Received status ${proxyRes.statusCode} from upstream for ${targetUrl}`);
-
-      // Forward status code and headers to client immediately
-      if (!res.headersSent) {
-        console.log(`[Proxy] Forwarding status ${proxyRes.statusCode} to client`);
-        res.writeHead(proxyRes.statusCode || 200, proxyRes.headers);
       } else {
-        console.log('[Proxy] Headers already sent, cannot forward status code');
+        capturedReq.bodyPreview = reqBody.toString('utf8').slice(0, limit);
+        capturedReq.encoding = 'text';
       }
+    }
+
+    this.store.add({ id, req: capturedReq });
+
+    // Make the proxied request
+    const parsedUrl = new URL(targetUrl);
+    const protocol = parsedUrl.protocol === 'https:' ? https : http;
+
+    // Prepare headers for proxied request
+    const proxyHeaders = { ...req.headers };
+    delete proxyHeaders['host']; // Remove original host
+    proxyHeaders['host'] = parsedUrl.host;
+    proxyHeaders['content-length'] = String(reqBody.length);
+
+    const options = {
+      hostname: parsedUrl.hostname,
+      port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
+      path: parsedUrl.pathname + parsedUrl.search,
+      method: req.method,
+      headers: proxyHeaders,
+    };
+
+    const proxyReq = protocol.request(options, (proxyRes) => {
+      const resChunks: Buffer[] = [];
+
+      console.log(`[Proxy] Received status ${proxyRes.statusCode} from upstream`);
+
+      // Forward status and headers to client
+      res.writeHead(proxyRes.statusCode || 200, proxyRes.headers);
 
       proxyRes.on('data', (chunk) => {
-        chunks.push(Buffer.from(chunk));
-        if (!res.finished) {
-          res.write(chunk); // Forward data to client
-        }
+        resChunks.push(Buffer.from(chunk));
+        res.write(chunk);
       });
 
       proxyRes.on('end', () => {
-        if (!res.finished) {
-          res.end(); // Complete the client response
-        }
+        res.end();
 
-        const body = Buffer.concat(chunks);
+        const resBody = Buffer.concat(resChunks);
         const finished = Date.now();
-        const contentType = (proxyRes.headers['content-type'] || '').toString();
-        const limit = Number(process.env.BODY_PREVIEW_LIMIT || 4096);
+        const resContentType = (proxyRes.headers['content-type'] || '').toString();
 
         let bodyPreview: string | undefined;
         let encoding: BodyEncoding | undefined;
 
-        if (body.length) {
-          if (contentType.includes('application/json')) {
+        if (resBody.length) {
+          if (resContentType.includes('application/json')) {
             try {
-              const json = JSON.parse(body.toString('utf8'));
+              const json = JSON.parse(resBody.toString('utf8'));
               bodyPreview = JSON.stringify(redactJson(json)).slice(0, limit);
               encoding = 'json';
             } catch {
-              bodyPreview = body.toString('utf8').slice(0, limit);
+              bodyPreview = resBody.toString('utf8').slice(0, limit);
               encoding = 'text';
             }
           } else {
-            bodyPreview = body.toString('utf8').slice(0, limit);
+            bodyPreview = resBody.toString('utf8').slice(0, limit);
             encoding = 'text';
           }
         }
@@ -149,25 +147,33 @@ export class ProxyController {
             ])
           ),
           bodyPreview,
-          bodyBytes: body.length,
+          bodyBytes: resBody.length,
           durationMs: finished - started,
         });
 
         const event = this.store.get(id);
         console.log('[Proxy] Event stored:', event?.req.method, event?.req.path, 'Status:', event?.res?.status);
         if (event) {
-          console.log('[Proxy] Emitting event to websocket');
           this.events.emitNew(event);
-
-          // Export to Arize if it's an LLM call
-          this.arize.exportEvent(event).catch(err => {
-            console.error('[Proxy] Failed to export to Arize:', err);
-          });
-        } else {
-          console.log('[Proxy] WARNING: Event not found in store!');
+          this.arize.exportEvent(event).catch(() => {});
         }
       });
     });
+
+    proxyReq.on('error', (err) => {
+      console.error('[Proxy] Error:', err.message);
+      if (!res.headersSent) {
+        res.writeHead(502, { 'Content-Type': 'text/plain' });
+      }
+      if (!res.finished) {
+        res.end('Proxy error');
+      }
+    });
+
+    // Send the request body
+    if (reqBody.length > 0) {
+      proxyReq.write(reqBody);
+    }
+    proxyReq.end();
   }
 }
-

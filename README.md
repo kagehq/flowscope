@@ -47,8 +47,6 @@ npm run dev
 
 ## Usage
 
-FlowScope acts as an HTTP proxy - just route your requests through it:
-
 ### Basic Example
 
 ```javascript

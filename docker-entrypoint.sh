@@ -7,11 +7,10 @@ echo "Proxy Server: http://localhost:4317"
 echo "Dashboard:    http://localhost:4320"
 echo ""
 
-# Start server in background
+# Start server in background with PORT=4317
 cd /app/apps/server
-node dist/main.js &
+PORT=4317 node dist/main.js &
 
-# Start web in foreground
+# Start web in foreground with PORT=4320
 cd /app/apps/web
-node .output/server/index.mjs
-
+PORT=4320 node .output/server/index.mjs
