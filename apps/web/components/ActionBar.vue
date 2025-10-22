@@ -39,7 +39,7 @@
 
     <!-- Share Modal -->
     <div v-if="showShareModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click="showShareModal = false">
-      <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4" @click.stop>
+      <div class="bg-gray-900 border border-gray-500/10 rounded-lg p-6 max-w-md w-full mx-4" @click.stop>
         <h3 class="text-xl font-bold text-white mb-4">📤 Share Session</h3>
         
         <div class="space-y-4">
@@ -48,13 +48,13 @@
             <input
               v-model="sessionName"
               placeholder="e.g., User registration flow"
-              class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-white mt-1"
+              class="w-full px-3 py-2 bg-gray-500/5 border border-gray-500/10 rounded text-white mt-1"
             />
           </div>
 
           <div>
             <label class="text-sm text-gray-400">Time Range</label>
-            <select v-model="shareTimeRange" class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-white mt-1">
+            <select v-model="shareTimeRange" class="w-full px-3 py-2 bg-gray-500/5 border border-gray-500/10 rounded text-white mt-1">
               <option :value="5 * 60 * 1000">Last 5 minutes</option>
               <option :value="15 * 60 * 1000">Last 15 minutes</option>
               <option :value="60 * 60 * 1000">Last hour</option>
@@ -69,13 +69,13 @@
             </label>
           </div>
 
-          <div v-if="sessionUrl" class="bg-green-900/30 border border-green-700 rounded p-3">
+          <div v-if="sessionUrl" class="bg-green-500/10 border border-green-500/20 rounded p-3">
             <div class="text-sm text-green-300 mb-2">✅ Session created!</div>
             <div class="flex items-center gap-2">
               <input
                 :value="fullSessionUrl"
                 readonly
-                class="flex-1 px-3 py-2 bg-gray-900 border border-gray-700 rounded text-white text-sm"
+                class="flex-1 px-3 py-2 bg-gray-500/5 border border-gray-500/10 rounded text-white text-sm"
               />
               <button
                 @click="copySessionUrl"
@@ -110,7 +110,7 @@
 
     <!-- Sessions List Modal -->
     <div v-if="showSessionsModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click="showSessionsModal = false">
-      <div class="bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-auto" @click.stop>
+      <div class="bg-gray-900 border border-gray-500/10 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-auto" @click.stop>
         <h3 class="text-xl font-bold text-white mb-4">📂 Saved Sessions</h3>
         
         <div v-if="loadingSessions" class="text-gray-400 text-center py-8">
@@ -125,7 +125,7 @@
           <div
             v-for="session in savedSessions"
             :key="session.id"
-            class="bg-gray-900 rounded-lg p-4 hover:bg-gray-700 cursor-pointer transition"
+            class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-4 hover:bg-gray-500/20 cursor-pointer transition"
             @click="openSession(session.id)"
           >
             <div class="flex items-start justify-between">

@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-900 border border-gray-700 rounded-lg p-6">
+  <div class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-6">
     <h2 class="text-xl font-bold mb-4 text-white">💰 LLM Cost Tracking</h2>
 
     <div v-if="loading" class="text-gray-400">Loading cost data...</div>
@@ -7,28 +7,28 @@
     <div v-else-if="stats" class="space-y-6">
       <!-- Summary Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-gray-800 rounded-lg p-4">
+        <div class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-4">
           <div class="text-gray-400 text-sm">Total Cost (24h)</div>
           <div class="text-2xl font-bold text-white">${{ stats.totalCost.toFixed(4) }}</div>
           <div class="text-xs text-gray-500 mt-1">{{ stats.totalLLMRequests }} requests</div>
         </div>
         
-        <div class="bg-gray-800 rounded-lg p-4">
+        <div class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-4">
           <div class="text-gray-400 text-sm">Total Tokens</div>
           <div class="text-2xl font-bold text-white">{{ formatNumber(stats.totalTokens) }}</div>
           <div class="text-xs text-gray-500 mt-1">{{ stats.totalRequests }} total reqs</div>
         </div>
         
-        <div class="bg-gray-800 rounded-lg p-4">
+        <div class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-4">
           <div class="text-gray-400 text-sm">Avg Cost/Request</div>
           <div class="text-2xl font-bold text-white">
             ${{ stats.totalLLMRequests > 0 ? (stats.totalCost / stats.totalLLMRequests).toFixed(4) : '0.0000' }}
           </div>
         </div>
         
-        <div class="bg-gray-800 rounded-lg p-4">
+        <div class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-4">
           <div class="text-gray-400 text-sm">Est. Monthly</div>
-          <div class="text-2xl font-bold text-yellow-400">
+          <div class="text-2xl font-bold text-yellow-300">
             ${{ (stats.totalCost * 30).toFixed(2) }}
           </div>
           <div class="text-xs text-gray-500 mt-1">if sustained</div>
@@ -36,7 +36,7 @@
       </div>
 
       <!-- Cost by Provider -->
-      <div class="bg-gray-800 rounded-lg p-4">
+      <div class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-4">
         <h3 class="text-lg font-semibold mb-3 text-white">By Provider</h3>
         <div class="space-y-2">
           <div v-for="(data, provider) in stats.byProvider" :key="provider" class="flex items-center justify-between">
@@ -53,7 +53,7 @@
       </div>
 
       <!-- Cost by Model -->
-      <div class="bg-gray-800 rounded-lg p-4">
+      <div class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-4">
         <h3 class="text-lg font-semibold mb-3 text-white">By Model</h3>
         <div class="space-y-2">
           <div v-for="(data, model) in sortedModels" :key="model" class="flex items-center justify-between">
@@ -69,13 +69,13 @@
       </div>
 
       <!-- Most Expensive Requests -->
-      <div class="bg-gray-800 rounded-lg p-4">
+      <div class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-4">
         <h3 class="text-lg font-semibold mb-3 text-white">🔥 Most Expensive Requests</h3>
         <div class="space-y-2">
           <div 
             v-for="req in stats.mostExpensive" 
             :key="req.id"
-            class="flex items-center justify-between py-2 px-3 bg-gray-900 rounded hover:bg-gray-700 cursor-pointer transition"
+            class="flex items-center justify-between py-2 px-3 bg-gray-500/5 border border-gray-500/10 rounded hover:bg-gray-500/20 cursor-pointer transition"
             @click="$emit('select-event', req.id)"
           >
             <div class="flex-1">
@@ -92,7 +92,7 @@
       </div>
 
       <!-- Cost Over Time Chart -->
-      <div class="bg-gray-800 rounded-lg p-4">
+      <div class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-4">
         <h3 class="text-lg font-semibold mb-3 text-white">Cost Over Time</h3>
         <div class="h-48 flex items-end gap-1">
           <div 
@@ -109,10 +109,10 @@
       </div>
 
       <!-- Optimization Tips -->
-      <div v-if="optimizationTips.length > 0" class="bg-blue-900/30 border border-blue-700 rounded-lg p-4">
+      <div v-if="optimizationTips.length > 0" class="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
         <h3 class="text-lg font-semibold mb-3 text-blue-300">💡 Optimization Tips</h3>
         <ul class="space-y-2">
-          <li v-for="(tip, idx) in optimizationTips" :key="idx" class="text-sm text-blue-200">
+          <li v-for="(tip, idx) in optimizationTips" :key="idx" class="text-sm text-gray-300">
             • {{ tip }}
           </li>
         </ul>

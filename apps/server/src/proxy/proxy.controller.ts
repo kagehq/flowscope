@@ -74,7 +74,7 @@ export class ProxyController {
 
     const reqBody = Buffer.concat(reqChunks);
     const headers = redactHeaders(req.headers as any);
-    
+
     const capturedReq: CapturedEvent['req'] = {
       id,
       ts: started,
@@ -185,7 +185,7 @@ export class ProxyController {
         });
 
         let event = this.store.get(id);
-        
+
         if (event) {
           // Extract LLM metadata if this is an LLM API call
           if (isLLMCall(targetUrl)) {
@@ -196,7 +196,7 @@ export class ProxyController {
               const resBodyParsed = encoding === 'json' && bodyPreview
                 ? JSON.parse(bodyPreview)
                 : null;
-              
+
               const llmMeta = extractLLMMetadata(targetUrl, reqBodyParsed, resBodyParsed);
               if (llmMeta) {
                 event.llm = llmMeta;
@@ -206,12 +206,12 @@ export class ProxyController {
               console.error('[Proxy] Failed to extract LLM metadata:', err);
             }
           }
-          
+
           // Extract session/correlation IDs for flow tracking
           event.sessionId = this.extractSessionId(req);
           event.correlationId = this.extractCorrelationId(req);
           event.userId = this.extractUserId(req);
-          
+
           this.events.emitNew(event);
           this.arize.exportEvent(event).catch(() => {});
         }

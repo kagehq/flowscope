@@ -269,10 +269,52 @@ function fmtTime(timestamp: number) {
       <!-- Header -->
       <header class="flex flex-col p-6 py-2 gap-4 border-b border-gray-500/15">
         <div class="flex items-center justify-between">
-          <div>
+          <div class="flex items-center gap-2">
             <h1 class="text-sm font-semibold text-white">
               Flowscope
             </h1>
+            <span class="text-gray-500/50 text-sm">/</span>
+            <div class="border border-gray-500/20 rounded-xl">
+              <nav class="flex gap-1 p-0.5">
+                  <button
+                    @click="activeTab = 'events'"
+                    class="px-2.5 py-1 text-xs font-medium transition-all border rounded-lg"
+                    :class="activeTab === 'events'
+                      ? 'text-white border-gray-500/15 bg-gray-500/15'
+                      : 'text-gray-400 hover:text-white border-transparent'"
+                  >
+                    Events
+                    <!-- <span class="ml-2 text-xs bg-gray-500/5 px-2 py-0.5 rounded">{{ filtered.length }}</span> -->
+                  </button>
+                  <button
+                    @click="activeTab = 'cost'"
+                    class="px-2.5 py-1 text-xs font-medium transition-all border rounded-lg"
+                    :class="activeTab === 'cost'
+                      ? 'text-white border-gray-500/15 bg-gray-500/15'
+                      : 'text-gray-400 hover:text-white border-transparent'"
+                  >
+                    LLM Costs
+                  </button>
+                  <button
+                    @click="activeTab = 'flows'"
+                    class="px-2.5 py-1 text-xs font-medium transition-all border rounded-lg"
+                    :class="activeTab === 'flows'
+                      ? 'text-white border-gray-500/15 bg-gray-500/15'
+                      : 'text-gray-400 hover:text-white border-transparent'"
+                  >
+                    Flows
+                  </button>
+                  <button
+                    @click="activeTab = 'actions'"
+                    class="px-2.5 py-1 text-xs font-medium transition-all border rounded-lg"
+                    :class="activeTab === 'actions'
+                      ? 'text-white border-gray-500/15 bg-gray-500/15'
+                      : 'text-gray-400 hover:text-white border-transparent'"
+                  >
+                    Export & Share
+                  </button>
+              </nav>
+            </div>
           </div>
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-2 px-3 py-1">
@@ -334,47 +376,7 @@ function fmtTime(timestamp: number) {
       </header>
 
       <!-- Tabs -->
-      <div class="border-b border-gray-500/10 px-6">
-        <nav class="flex gap-1">
-            <button
-              @click="activeTab = 'events'"
-              class="px-4 py-3 text-sm font-medium transition-all border-b-2"
-              :class="activeTab === 'events'
-                ? 'text-white border-blue-300'
-                : 'text-gray-400 hover:text-white border-transparent'"
-            >
-              📊 Events
-              <span class="ml-2 text-xs bg-gray-500/5 px-2 py-0.5 rounded">{{ filtered.length }}</span>
-            </button>
-            <button
-              @click="activeTab = 'cost'"
-              class="px-4 py-3 text-sm font-medium transition-all border-b-2"
-              :class="activeTab === 'cost'
-                ? 'text-white border-yellow-300'
-                : 'text-gray-400 hover:text-white border-transparent'"
-            >
-              💰 LLM Costs
-            </button>
-            <button
-              @click="activeTab = 'flows'"
-              class="px-4 py-3 text-sm font-medium transition-all border-b-2"
-              :class="activeTab === 'flows'
-                ? 'text-white border-purple-300'
-                : 'text-gray-400 hover:text-white border-transparent'"
-            >
-              🔄 Flows
-            </button>
-            <button
-              @click="activeTab = 'actions'"
-              class="px-4 py-3 text-sm font-medium transition-all border-b-2"
-              :class="activeTab === 'actions'
-                ? 'text-white border-green-300'
-                : 'text-gray-400 hover:text-white border-transparent'"
-            >
-              🎭 Export & Share
-            </button>
-        </nav>
-      </div>
+
 
       <!-- Error Display -->
       <div v-if="error" class="mx-6 my-4 p-4 bg-red-500/10 border border-red-500/25 rounded-lg">

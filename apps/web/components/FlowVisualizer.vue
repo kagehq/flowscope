@@ -1,10 +1,10 @@
 <template>
-  <div class="bg-gray-900 border border-gray-700 rounded-lg p-6">
+  <div class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-6">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-bold text-white">🔄 Flow Tracking</h2>
-      <button 
+      <h2 class="text-xl font-bold text-white">Flow Tracking</h2>
+      <button
         @click="refresh"
-        class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm text-white transition"
+        class="px-3 py-1 bg-gray-500/10 border border-gray-500/10 hover:bg-gray-500/20 rounded text-sm text-white transition"
       >
         Refresh
       </button>
@@ -16,41 +16,41 @@
         v-model="searchSessionId"
         @keyup.enter="searchBySession"
         placeholder="Search by Session ID"
-        class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+        class="w-full px-3 py-2 bg-gray-500/5 border border-gray-500/10 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-300"
       />
       <input
         v-model="searchCorrelationId"
         @keyup.enter="searchByCorrelation"
         placeholder="Search by Correlation ID"
-        class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+        class="w-full px-3 py-2 bg-gray-500/5 border border-gray-500/10 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-300"
       />
       <input
         v-model="searchUserId"
         @keyup.enter="searchByUser"
         placeholder="Search by User ID"
-        class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+        class="w-full px-3 py-2 bg-gray-500/5 border border-gray-500/10 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-300"
       />
     </div>
 
     <!-- Flow Results -->
     <div v-if="flowEvents.length > 0" class="mb-6">
       <h3 class="text-lg font-semibold mb-3 text-white">
-        📊 Request Flow ({{ flowEvents.length }} requests)
+        Request Flow ({{ flowEvents.length }} requests)
       </h3>
-      
-      <div class="bg-gray-800 rounded-lg p-4 max-h-96 overflow-y-auto">
+
+      <div class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-4 max-h-96 overflow-y-auto">
         <div class="space-y-2">
           <div
             v-for="(event, idx) in flowEvents"
             :key="event.id"
-            class="flex items-start gap-3 p-3 bg-gray-900 rounded hover:bg-gray-700 cursor-pointer transition"
+            class="flex items-start gap-3 p-3 bg-gray-500/5 border border-gray-500/10 rounded hover:bg-gray-500/20 cursor-pointer transition"
             @click="$emit('select-event', event.id)"
           >
             <!-- Step Number -->
             <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
               {{ idx + 1 }}
             </div>
-            
+
             <!-- Request Info -->
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
@@ -62,7 +62,7 @@
                   {{ event.res.status }}
                 </span>
               </div>
-              
+
               <div class="text-xs text-gray-400 mt-1">
                 {{ formatTime(event.req.ts) }}
                 <span v-if="event.res?.durationMs" class="ml-2">
@@ -84,17 +84,17 @@
 
       <!-- Flow Summary -->
       <div class="mt-4 grid grid-cols-3 gap-4">
-        <div class="bg-gray-800 rounded p-3">
+        <div class="bg-gray-500/10 border border-gray-500/10 rounded p-3">
           <div class="text-gray-400 text-xs">Total Duration</div>
           <div class="text-white font-bold">{{ flowDuration }}ms</div>
         </div>
-        <div class="bg-gray-800 rounded p-3">
+        <div class="bg-gray-500/10 border border-gray-500/10 rounded p-3">
           <div class="text-gray-400 text-xs">LLM Cost</div>
-          <div class="text-yellow-400 font-bold">${{ flowCost.toFixed(4) }}</div>
+          <div class="text-yellow-300 font-bold">${{ flowCost.toFixed(4) }}</div>
         </div>
-        <div class="bg-gray-800 rounded p-3">
+        <div class="bg-gray-500/10 border border-gray-500/10 rounded p-3">
           <div class="text-gray-400 text-xs">Errors</div>
-          <div class="text-red-400 font-bold">{{ flowErrors }}</div>
+          <div class="text-red-300 font-bold">{{ flowErrors }}</div>
         </div>
       </div>
     </div>
@@ -106,7 +106,7 @@
         <div
           v-for="(session, id) in topSessions"
           :key="id"
-          class="bg-gray-800 rounded-lg p-3 hover:bg-gray-700 cursor-pointer transition"
+          class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-3 hover:bg-gray-500/20 cursor-pointer transition"
           @click="searchSessionId = id; searchBySession()"
         >
           <div class="flex items-center justify-between">
@@ -116,7 +116,7 @@
                 {{ session.requests }} requests • {{ formatDuration(session.duration) }}
               </div>
             </div>
-            <button class="text-blue-400 text-sm hover:text-blue-300">View →</button>
+            <button class="text-blue-300 text-sm hover:text-blue-200">View →</button>
           </div>
         </div>
       </div>
@@ -126,7 +126,7 @@
         <div
           v-for="(user, id) in topUsers"
           :key="id"
-          class="bg-gray-800 rounded-lg p-3 hover:bg-gray-700 cursor-pointer transition"
+          class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-3 hover:bg-gray-500/20 cursor-pointer transition"
           @click="searchUserId = id; searchByUser()"
         >
           <div class="flex items-center justify-between">
@@ -134,12 +134,12 @@
               <div class="text-white text-sm">User: {{ id }}</div>
               <div class="text-xs text-gray-400 mt-1">
                 {{ user.requests }} requests
-                <span v-if="user.llmCost > 0" class="ml-2 text-yellow-400">
+                <span v-if="user.llmCost > 0" class="ml-2 text-yellow-300">
                   • ${{ user.llmCost.toFixed(4) }} LLM cost
                 </span>
               </div>
             </div>
-            <button class="text-blue-400 text-sm hover:text-blue-300">View →</button>
+            <button class="text-blue-300 text-sm hover:text-blue-200">View →</button>
           </div>
         </div>
       </div>
