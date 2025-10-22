@@ -336,43 +336,43 @@ function fmtTime(timestamp: number) {
       <!-- Tabs -->
       <div class="border-b border-gray-500/10 px-6">
         <nav class="flex gap-1">
-          <button
-            @click="activeTab = 'events'"
-            class="px-4 py-3 text-sm font-medium transition-all border-b-2"
-            :class="activeTab === 'events'
-              ? 'text-white border-blue-300'
-              : 'text-gray-400 hover:text-white border-transparent'"
-          >
-            Events
-            <span class="ml-2 text-xs bg-gray-500/5 px-2 py-0.5 rounded">{{ filtered.length }}</span>
-          </button>
-          <button
-            @click="activeTab = 'cost'"
-            class="px-4 py-3 text-sm font-medium transition-all border-b-2"
-            :class="activeTab === 'cost'
-              ? 'text-white border-yellow-300'
-              : 'text-gray-400 hover:text-white border-transparent'"
-          >
-            LLM Costs
-          </button>
-          <button
-            @click="activeTab = 'flows'"
-            class="px-4 py-3 text-sm font-medium transition-all border-b-2"
-            :class="activeTab === 'flows'
-              ? 'text-white border-purple-300'
-              : 'text-gray-400 hover:text-white border-transparent'"
-          >
-            Flows
-          </button>
-          <button
-            @click="activeTab = 'actions'"
-            class="px-4 py-3 text-sm font-medium transition-all border-b-2"
-            :class="activeTab === 'actions'
-              ? 'text-white border-green-300'
-              : 'text-gray-400 hover:text-white border-transparent'"
-          >
-            Export & Share
-          </button>
+            <button
+              @click="activeTab = 'events'"
+              class="px-4 py-3 text-sm font-medium transition-all border-b-2"
+              :class="activeTab === 'events'
+                ? 'text-white border-blue-300'
+                : 'text-gray-400 hover:text-white border-transparent'"
+            >
+              📊 Events
+              <span class="ml-2 text-xs bg-gray-500/5 px-2 py-0.5 rounded">{{ filtered.length }}</span>
+            </button>
+            <button
+              @click="activeTab = 'cost'"
+              class="px-4 py-3 text-sm font-medium transition-all border-b-2"
+              :class="activeTab === 'cost'
+                ? 'text-white border-yellow-300'
+                : 'text-gray-400 hover:text-white border-transparent'"
+            >
+              💰 LLM Costs
+            </button>
+            <button
+              @click="activeTab = 'flows'"
+              class="px-4 py-3 text-sm font-medium transition-all border-b-2"
+              :class="activeTab === 'flows'
+                ? 'text-white border-purple-300'
+                : 'text-gray-400 hover:text-white border-transparent'"
+            >
+              🔄 Flows
+            </button>
+            <button
+              @click="activeTab = 'actions'"
+              class="px-4 py-3 text-sm font-medium transition-all border-b-2"
+              :class="activeTab === 'actions'
+                ? 'text-white border-green-300'
+                : 'text-gray-400 hover:text-white border-transparent'"
+            >
+              🎭 Export & Share
+            </button>
         </nav>
       </div>
 
