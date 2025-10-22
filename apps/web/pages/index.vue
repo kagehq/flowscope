@@ -314,23 +314,85 @@ const perfStats = computed(() => {
   };
 });
 
-// Sparkline data - last 20 events for trend visualization
+// Sparkline data - group events into time buckets to show actual trends
 const requestsSparkline = computed(() => {
-  return events.value.slice(0, 20).reverse().map(() => 1);
+  if (events.value.length === 0) return [];
+  
+  const bucketCount = 20;
+  const recentEvents = events.value.slice(0, 100); // Look at last 100 events
+  
+  if (recentEvents.length === 0) return [];
+  
+  const oldest = recentEvents[recentEvents.length - 1].req.ts;
+  const newest = recentEvents[0].req.ts;
+  const range = newest - oldest || 1;
+  const bucketSize = range / bucketCount;
+  
+  const buckets = new Array(bucketCount).fill(0);
+  
+  recentEvents.forEach(event => {
+    const bucketIndex = Math.min(
+      Math.floor((event.req.ts - oldest) / bucketSize),
+      bucketCount - 1
+    );
+    buckets[bucketIndex]++;
+  });
+  
+  return buckets;
 });
 
 const errorsSparkline = computed(() => {
-  return events.value
-    .slice(0, 20)
-    .reverse()
-    .map(ev => (ev.res?.status && ev.res.status >= 400 ? 1 : 0));
+  if (events.value.length === 0) return [];
+  
+  const bucketCount = 20;
+  const recentEvents = events.value.slice(0, 100);
+  
+  if (recentEvents.length === 0) return [];
+  
+  const oldest = recentEvents[recentEvents.length - 1].req.ts;
+  const newest = recentEvents[0].req.ts;
+  const range = newest - oldest || 1;
+  const bucketSize = range / bucketCount;
+  
+  const buckets = new Array(bucketCount).fill(0);
+  
+  recentEvents.forEach(event => {
+    if (event.res?.status && event.res.status >= 400) {
+      const bucketIndex = Math.min(
+        Math.floor((event.req.ts - oldest) / bucketSize),
+        bucketCount - 1
+      );
+      buckets[bucketIndex]++;
+    }
+  });
+  
+  return buckets;
 });
 
 const costSparkline = computed(() => {
-  return events.value
-    .slice(0, 20)
-    .reverse()
-    .map(ev => ev.llm?.cost || 0);
+  if (events.value.length === 0) return [];
+  
+  const bucketCount = 20;
+  const recentEvents = events.value.slice(0, 100).filter(ev => ev.llm?.cost);
+  
+  if (recentEvents.length === 0) return [];
+  
+  const oldest = recentEvents[recentEvents.length - 1].req.ts;
+  const newest = recentEvents[0].req.ts;
+  const range = newest - oldest || 1;
+  const bucketSize = range / bucketCount;
+  
+  const buckets = new Array(bucketCount).fill(0);
+  
+  recentEvents.forEach(event => {
+    const bucketIndex = Math.min(
+      Math.floor((event.req.ts - oldest) / bucketSize),
+      bucketCount - 1
+    );
+    buckets[bucketIndex] += event.llm?.cost || 0;
+  });
+  
+  return buckets;
 });
 
 function fmtMs(ms?: number) {
