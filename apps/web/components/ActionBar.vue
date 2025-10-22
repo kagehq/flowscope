@@ -4,7 +4,7 @@
     <button
       @click="exportMock"
       :disabled="exporting"
-      class="px-3 py-2 bg-purple-300 font-medium hover:bg-purple-400 disabled:bg-gray-700 rounded-lg text-sm text-black transition flex items-center gap-2"
+      class="px-3 py-2 bg-purple-300 font-medium hover:bg-purple-400 disabled:bg-gray-700 rounded-lg text-xs text-black transition flex items-center gap-2"
     >
       <!-- <span>{{ exporting ? '⏳' : '🎭' }}</span> -->
       <span>Export Mock Server</span>
@@ -13,7 +13,7 @@
     <!-- Share Session -->
     <button
       @click="showShareModal = true"
-      class="px-3 py-2 bg-green-300 font-medium hover:bg-green-400 rounded-lg text-sm text-black transition flex items-center gap-2"
+      class="px-3 py-2 bg-green-300 font-medium hover:bg-green-400 rounded-lg text-xs text-black transition flex items-center gap-2"
     >
       <!-- <span>🔗</span> -->
       <span>Share Session</span>
@@ -22,7 +22,7 @@
     <!-- View Saved Sessions -->
     <button
       @click="showSessionsModal = true"
-      class="px-3 py-2 bg-blue-300 font-medium hover:bg-blue-400 rounded-lg text-sm text-black transition flex items-center gap-2"
+      class="px-3 py-2 bg-blue-300 font-medium hover:bg-blue-400 rounded-lg text-xs text-black transition flex items-center gap-2"
     >
       <!-- <span>📂</span> -->
       <span>Saved Sessions</span>
@@ -32,15 +32,15 @@
     <button
       v-if="selectedEventId"
       @click="$emit('export-curl', selectedEventId)"
-      class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm text-white transition"
+      class="px-3 py-2 bg-gray-500/5 border border-gray-500/10 hover:bg-gray-500/10 rounded-lg text-xs text-white transition"
     >
       Export as cURL
     </button>
 
     <!-- Share Modal -->
     <div v-if="showShareModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click="showShareModal = false">
-      <div class="bg-gray-900 border border-gray-500/10 rounded-lg p-6 max-w-md w-full mx-4" @click.stop>
-        <h3 class="text-xl font-bold text-white mb-4">📤 Share Session</h3>
+      <div class="bg-black border border-gray-500/20 rounded-lg p-6 max-w-md w-full mx-4" @click.stop>
+        <h3 class="text-xl font-bold text-white mb-4">Share Session</h3>
 
         <div class="space-y-4">
           <div>
@@ -69,17 +69,17 @@
             </label>
           </div>
 
-          <div v-if="sessionUrl" class="bg-green-500/10 border border-green-500/20 rounded p-3">
-            <div class="text-sm text-green-300 mb-2">✅ Session created!</div>
+          <div v-if="sessionUrl" class="bg-green-300/10 border border-green-300/20 rounded-lg p-3">
+            <div class="text-sm text-green-300 mb-2">Session created!</div>
             <div class="flex items-center gap-2">
               <input
                 :value="fullSessionUrl"
                 readonly
-                class="flex-1 px-3 py-2 bg-gray-500/5 border border-gray-500/10 rounded text-white text-sm"
+                class="flex-1 px-3 py-2 bg-gray-500/5 border border-gray-500/10 rounded-lg text-white text-sm"
               />
               <button
                 @click="copySessionUrl"
-                class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm text-white transition"
+                class="px-3 py-2 font-medium bg-blue-300 hover:bg-blue-400 rounded-lg text-sm text-black transition"
               >
                 {{ copied ? '✓' : 'Copy' }}
               </button>
@@ -94,13 +94,13 @@
           <button
             @click="createSession"
             :disabled="creating"
-            class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 rounded text-white transition"
+            class="flex-1 px-4 py-2 bg-blue-300 text-sm font-medium hover:bg-blue-400 disabled:bg-gray-700 rounded-lg text-black transition"
           >
             {{ creating ? 'Creating...' : 'Create Share Link' }}
           </button>
           <button
             @click="closeShareModal"
-            class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-white transition"
+            class="px-4 py-2 font-medium bg-gray-500/5 border border-gray-500/10 hover:bg-gray-500/10 rounded-lg text-white transition"
           >
             Close
           </button>
@@ -110,8 +110,8 @@
 
     <!-- Sessions List Modal -->
     <div v-if="showSessionsModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click="showSessionsModal = false">
-      <div class="bg-gray-900 border border-gray-500/10 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-auto" @click.stop>
-        <h3 class="text-xl font-bold text-white mb-4">📂 Saved Sessions</h3>
+      <div class="bg-black border border-gray-500/20 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-auto" @click.stop>
+        <h3 class="text-xl font-bold text-white mb-4">Saved Sessions</h3>
 
         <div v-if="loadingSessions" class="text-gray-400 text-center py-8">
           Loading sessions...
@@ -137,9 +137,9 @@
               </div>
               <button
                 @click.stop="copyLink(session.id)"
-                class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm text-white transition"
+                class="px-3 py-1 bg-blue-300 hover:bg-blue-400 rounded-lg font-medium text-sm text-black transition"
               >
-                📋 Copy Link
+                Copy Link
               </button>
             </div>
           </div>
@@ -148,7 +148,7 @@
         <div class="mt-6">
           <button
             @click="showSessionsModal = false"
-            class="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-white transition"
+            class="w-full px-4 py-2 bg-gray-500/5 border border-gray-500/10 hover:bg-gray-500/10 rounded-lg text-white transition"
           >
             Close
           </button>

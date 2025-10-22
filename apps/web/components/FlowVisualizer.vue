@@ -151,11 +151,25 @@
       </div>
 
       <!-- Empty State -->
-      <div v-if="Object.keys(topSessions).length === 0 && Object.keys(topUsers).length === 0" class="text-center py-12">
-        <div class="text-gray-500 text-sm">
-          No flow data yet. Make some requests with session or user IDs to see them here.
-        </div>
-      </div>
+      <EmptyState
+        v-if="Object.keys(topSessions).length === 0 && Object.keys(topUsers).length === 0"
+        title="No flow data available"
+        description="Capture requests with session, correlation, or user IDs to track request flows and debug complex interactions."
+      >
+        <template #icon>
+          <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        </template>
+        <template #actions>
+          <div class="text-xs text-gray-400 space-y-1 text-left">
+            <p><strong>Include tracking headers:</strong></p>
+            <p>→ <code class="bg-gray-500/10 px-1.5 py-0.5 rounded">x-session-id</code> - Track user sessions</p>
+            <p>→ <code class="bg-gray-500/10 px-1.5 py-0.5 rounded">x-correlation-id</code> - Link related requests</p>
+            <p>→ <code class="bg-gray-500/10 px-1.5 py-0.5 rounded">x-user-id</code> - Group by user</p>
+          </div>
+        </template>
+      </EmptyState>
     </div>
   </div>
 </template>

@@ -2,9 +2,29 @@
   <div class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-6">
     <h2 class="text-xl font-bold mb-4 text-white">💰 LLM Cost Tracking</h2>
 
-    <div v-if="loading" class="text-gray-400">Loading cost data...</div>
+    <div v-if="loading">
+      <LoadingSkeleton type="cost-dashboard" />
+    </div>
+
+    <EmptyState
+      v-else-if="!stats || stats.totalLLMRequests === 0"
+      title="No LLM requests detected"
+      description="Make LLM API calls through FlowScope proxy to track costs and optimize spending."
+    >
+      <template #icon>
+        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </template>
+      <template #actions>
+        <div class="text-xs text-gray-400 space-y-1">
+          <p>Supported providers: OpenAI, Anthropic, Mistral, Cohere, Google AI</p>
+          <p>→ Configure your LLM client to use <code class="bg-gray-500/10 px-1.5 py-0.5 rounded">http://localhost:4317/proxy/...</code></p>
+        </div>
+      </template>
+    </EmptyState>
     
-    <div v-else-if="stats" class="space-y-6">
+    <div v-else class="space-y-6">
       <!-- Summary Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-4">

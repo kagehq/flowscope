@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useSocket } from '~/composables/useSocket';
+import { useToast } from '~/composables/useToast';
+import { exportAsHAR, exportAsPostman, exportAsCSV, downloadFile } from '~/utils/export';
 import type { CapturedEvent } from '@flowscope/shared';
+
+const toast = useToast();
 
 useHead({
   title: 'FlowScope - A local, ephemeral HTTP request and response viewer',
@@ -14,6 +18,7 @@ const error = ref<string | null>(null);
 const expandedEventId = ref<string | null>(null);
 const copied = ref<string | null>(null);
 const replaying = ref<string | null>(null);
+const hoveredEventId = ref<string | null>(null);
 
 // Diff/Compare mode
 const compareMode = ref(false);
@@ -153,6 +158,7 @@ async function copyCurl(ev: CapturedEvent) {
   const curlCmd = getCurlCommand(ev);
   await navigator.clipboard.writeText(curlCmd);
   copied.value = ev.id;
+  toast.success('Copied as cURL');
   setTimeout(() => {
     copied.value = null;
   }, 2000);
@@ -165,14 +171,45 @@ async function replay(ev: CapturedEvent) {
     const result = await response.json();
 
     if (result.ok) {
-      alert(`Request replayed! Status: ${result.status}`);
+      toast.success(`Request replayed! Status: ${result.status}`);
     } else {
-      alert(`Failed to replay: ${result.error || 'Unknown error'}`);
+      toast.error(`Failed to replay: ${result.error || 'Unknown error'}`);
     }
   } catch (error) {
-    alert(`Failed to replay: ${error instanceof Error ? error.message : 'Network error'}`);
+    toast.error(`Failed to replay: ${error instanceof Error ? error.message : 'Network error'}`);
   } finally {
     replaying.value = null;
+  }
+}
+
+// Export functions
+function handleExportHAR() {
+  try {
+    const har = exportAsHAR(filtered.value);
+    downloadFile(har, `flowscope-${Date.now()}.har`, 'application/json');
+    toast.success('Exported as HAR file');
+  } catch (error) {
+    toast.error('Failed to export HAR');
+  }
+}
+
+function handleExportPostman() {
+  try {
+    const postman = exportAsPostman(filtered.value);
+    downloadFile(postman, `flowscope-${Date.now()}.postman_collection.json`, 'application/json');
+    toast.success('Exported as Postman Collection');
+  } catch (error) {
+    toast.error('Failed to export Postman Collection');
+  }
+}
+
+function handleExportCSV() {
+  try {
+    const csv = exportAsCSV(filtered.value);
+    downloadFile(csv, `flowscope-${Date.now()}.csv`, 'text/csv');
+    toast.success('Exported as CSV');
+  } catch (error) {
+    toast.error('Failed to export CSV');
   }
 }
 
@@ -275,6 +312,25 @@ const perfStats = computed(() => {
     avg,
     count: durations.length,
   };
+});
+
+// Sparkline data - last 20 events for trend visualization
+const requestsSparkline = computed(() => {
+  return events.value.slice(0, 20).reverse().map(() => 1);
+});
+
+const errorsSparkline = computed(() => {
+  return events.value
+    .slice(0, 20)
+    .reverse()
+    .map(ev => (ev.res?.status && ev.res.status >= 400 ? 1 : 0));
+});
+
+const costSparkline = computed(() => {
+  return events.value
+    .slice(0, 20)
+    .reverse()
+    .map(ev => ev.llm?.cost || 0);
 });
 
 function fmtMs(ms?: number) {
@@ -435,7 +491,43 @@ function fmtTime(timestamp: number) {
 
       <!-- Export & Share Tab -->
       <div v-if="activeTab === 'actions' && hasEvents" class="p-6 max-w-4xl">
-        <h2 class="text-2xl font-bold text-white mb-4">Export & Share</h2>
+        <h2 class="text-2xl font-bold text-white mb-6">Export & Share</h2>
+        
+        <!-- Export Section -->
+        <div class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-6 mb-6">
+          <h3 class="text-lg font-bold text-white mb-4">Export Data</h3>
+          <p class="text-sm text-gray-400 mb-4">Export {{ filtered.length }} filtered event{{ filtered.length === 1 ? '' : 's' }} in various formats</p>
+          <div class="flex flex-wrap gap-3">
+            <button
+              @click="handleExportHAR"
+              class="flex items-center gap-2 px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-300 rounded-lg transition"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+              </svg>
+              Export as HAR
+            </button>
+            <button
+              @click="handleExportPostman"
+              class="flex items-center gap-2 px-4 py-2 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 text-orange-300 rounded-lg transition"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+              </svg>
+              Export for Postman
+            </button>
+            <button
+              @click="handleExportCSV"
+              class="flex items-center gap-2 px-4 py-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 text-green-300 rounded-lg transition"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Export as CSV
+            </button>
+          </div>
+        </div>
+
         <div class="space-y-4">
           <ActionBar :selectedEventId="expandedEventId ?? undefined" />
 
@@ -486,6 +578,11 @@ function fmtTime(timestamp: number) {
          <div v-if="loading" class="absolute right-3 top-1/2 -translate-y-1/2">
            <div class="w-4 h-4 border-2 border-gray-500 border-t-blue-300 rounded-full animate-spin"></div>
          </div>
+       </div>
+
+       <!-- Request Timeline -->
+       <div v-if="events.length > 0" class="border-b border-gray-500/10 px-6 py-3 bg-gray-500/5">
+         <RequestTimeline :events="events" :maxEvents="15" @select-event="(id) => expandedEventId = id" />
        </div>
 
        <!-- Quick Filters -->
@@ -577,23 +674,38 @@ function fmtTime(timestamp: number) {
              }">{{ perfStats.p95 }}ms</span>
            </div>
 
-           <div class="flex items-center gap-1.5">
-             <span class="text-xs text-gray-400">p99</span>
-             <span class="text-sm font-mono font-semibold" :class="{
-               'text-green-300': perfStats.p99 < 100,
-               'text-yellow-300': perfStats.p99 >= 100 && perfStats.p99 < 500,
-               'text-orange-300': perfStats.p99 >= 500 && perfStats.p99 < 1000,
-               'text-red-300': perfStats.p99 >= 1000
-             }">{{ perfStats.p99 }}ms</span>
-           </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs text-gray-400">p99</span>
+            <span class="text-sm font-mono font-semibold" :class="{
+              'text-green-300': perfStats.p99 < 100,
+              'text-yellow-300': perfStats.p99 >= 100 && perfStats.p99 < 500,
+              'text-orange-300': perfStats.p99 >= 500 && perfStats.p99 < 1000,
+              'text-red-300': perfStats.p99 >= 1000
+            }">{{ perfStats.p99 }}ms</span>
+          </div>
 
-           <div class="flex-1"></div>
+          <div class="flex-1"></div>
 
-           <div class="text-xs text-gray-400">
-             {{ filtered.length }} / {{ events.length }} requests
-           </div>
-         </div>
-       </div>
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-400">Requests:</span>
+              <Sparkline v-if="requestsSparkline.length > 0" :data="requestsSparkline" :width="60" :height="20" color="#6ee7b7" class="opacity-70" />
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-400">Errors:</span>
+              <Sparkline v-if="errorsSparkline.length > 0" :data="errorsSparkline" :width="60" :height="20" color="#fca5a5" class="opacity-70" />
+            </div>
+            <div v-if="hasLLMRequests" class="flex items-center gap-2">
+              <span class="text-xs text-gray-400">Cost:</span>
+              <Sparkline v-if="costSparkline.length > 0" :data="costSparkline" :width="60" :height="20" color="#fde047" class="opacity-70" />
+            </div>
+          </div>
+
+          <div class="text-xs text-gray-400">
+            {{ filtered.length }} / {{ events.length }} requests
+          </div>
+        </div>
+      </div>
 
       <section class="pb-5 px-0">
         <!-- Events List -->
@@ -607,23 +719,34 @@ function fmtTime(timestamp: number) {
             </div>
           </div> -->
 
+          <!-- Loading Skeleton -->
+          <div v-if="loading" class="px-6 py-4">
+            <LoadingSkeleton type="event-list" :count="8" />
+          </div>
+
           <!-- Empty State -->
-          <div v-if="filtered.length === 0" class="flex flex-col items-center justify-center py-16 px-6">
-            <div class="w-14 h-14 rounded-full bg-gray-500/5 border border-gray-500/10 flex items-center justify-center mb-4">
-              <svg class="w-7 h-7 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <EmptyState
+            v-else-if="filtered.length === 0"
+            title="No requests captured yet"
+            description="Start making HTTP requests through the FlowScope proxy to see them appear here in real-time."
+          >
+            <template #icon>
+              <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-            </div>
-            <h3 class="text-xl font-medium text-gray-400 mb-2">No events yet</h3>
-            <p class="text-gray-500 text-center max-w-md mb-6">
-              Events will appear here as your application makes HTTP requests through the proxy
-            </p>
-            <div class="flex gap-3">
-              <button @click="load" class="bg-gray-500/10 border border-gray-500/25 text-white rounded-lg px-3 py-1.5 text-sm">
-                Refresh
-              </button>
-            </div>
-          </div>
+            </template>
+            <template #actions>
+              <div class="space-y-2">
+                <div class="text-xs text-gray-400 space-y-1">
+                  <p>→ Point your app to <code class="bg-gray-500/10 px-1.5 py-0.5 rounded">http://localhost:4317/proxy/...</code></p>
+                  <p>→ Or try our mock server: <code class="bg-gray-500/10 px-1.5 py-0.5 rounded">npm run test:mock</code></p>
+                </div>
+                <button @click="load" class="bg-blue-500/20 border border-blue-500/30 text-blue-300 hover:bg-blue-500/30 rounded-lg px-4 py-2 text-sm transition">
+                  Refresh Events
+                </button>
+              </div>
+            </template>
+          </EmptyState>
 
           <!-- Events List -->
           <ul v-else>
@@ -652,11 +775,15 @@ function fmtTime(timestamp: number) {
 
                 <button
                   @click="compareMode ? toggleSelectForCompare(ev.id) : toggleEvent(ev.id)"
-                  class="flex-1 flex items-center gap-4 px-6 py-3 font-mono hover:bg-gray-500/5 group cursor-pointer text-left"
+                  @mouseenter="hoveredEventId = ev.id"
+                  @mouseleave="hoveredEventId = null"
+                  class="relative flex-1 flex items-center gap-4 px-6 py-3 font-mono hover:bg-gray-500/5 group cursor-pointer text-left"
                   :class="{
                     'bg-gray-500/10': expandedEventId === ev.id && !compareMode
                   }"
                 >
+                  <!-- Tooltip -->
+                  <RequestTooltip :event="ev" :show="hoveredEventId === ev.id && !expandedEventId" />
                   <!-- Duration -->
                   <div class="text-sm font-mono w-16 shrink-0 text-gray-500">
                     {{ fmtMs(ev.res?.durationMs) }}
@@ -676,10 +803,8 @@ function fmtTime(timestamp: number) {
                   </div>
 
                   <!-- Method -->
-                  <div class="shrink-0 w-16">
-                    <span class="text-white text-sm font-medium">
-                      {{ ev.req.method }}
-                    </span>
+                  <div class="shrink-0 w-20">
+                    <MethodBadge :method="ev.req.method" />
                   </div>
 
                   <!-- Path -->

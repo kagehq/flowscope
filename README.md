@@ -25,6 +25,13 @@ Terminal logging is the default, but it's painful:
 - ✅ **Smart mocking** - Generate working mock servers from captured traffic
 - ✅ **Session sharing** - Collaborate on debugging with shareable links
 
+## Community & Support
+
+Join our Discord community for discussions, support, and updates:
+
+[![Discord](https://img.shields.io/badge/Discord-Join%20our%20community-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/KqdBcqRk5E)
+
+
 ## Quick Start
 
 ### Using Docker (Easiest)
