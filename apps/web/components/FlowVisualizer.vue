@@ -4,7 +4,7 @@
       <h2 class="text-xl font-bold text-white">Flow Tracking</h2>
       <button
         @click="refresh"
-        class="px-3 py-1 bg-gray-500/10 border border-gray-500/10 hover:bg-gray-500/20 rounded text-sm text-white transition"
+        class="px-3 py-1 bg-gray-500/10 border border-gray-500/10 hover:bg-gray-500/20 rounded-lg text-sm text-white transition"
       >
         Refresh
       </button>
@@ -16,19 +16,19 @@
         v-model="searchSessionId"
         @keyup.enter="searchBySession"
         placeholder="Search by Session ID"
-        class="w-full px-3 py-2 bg-gray-500/5 border border-gray-500/10 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-300"
+        class="w-full px-3 py-2 bg-gray-500/5 border border-gray-500/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-300"
       />
       <input
         v-model="searchCorrelationId"
         @keyup.enter="searchByCorrelation"
         placeholder="Search by Correlation ID"
-        class="w-full px-3 py-2 bg-gray-500/5 border border-gray-500/10 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-300"
+        class="w-full px-3 py-2 bg-gray-500/5 border border-gray-500/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-300"
       />
       <input
         v-model="searchUserId"
         @keyup.enter="searchByUser"
         placeholder="Search by User ID"
-        class="w-full px-3 py-2 bg-gray-500/5 border border-gray-500/10 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-300"
+        class="w-full px-3 py-2 bg-gray-500/5 border border-gray-500/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-300"
       />
     </div>
 
@@ -43,11 +43,11 @@
           <div
             v-for="(event, idx) in flowEvents"
             :key="event.id"
-            class="flex items-start gap-3 p-3 bg-gray-500/5 border border-gray-500/10 rounded hover:bg-gray-500/20 cursor-pointer transition"
+            class="flex items-start gap-3 p-3 bg-gray-500/5 border border-gray-500/10 rounded-lg hover:bg-gray-500/20 cursor-pointer transition"
             @click="$emit('select-event', event.id)"
           >
             <!-- Step Number -->
-            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-300 flex items-center justify-center text-black text-sm font-bold">
               {{ idx + 1 }}
             </div>
 
@@ -68,7 +68,7 @@
                 <span v-if="event.res?.durationMs" class="ml-2">
                   • {{ event.res.durationMs }}ms
                 </span>
-                <span v-if="event.llm" class="ml-2 text-yellow-400">
+                <span v-if="event.llm" class="ml-2 text-yellow-300">
                   • 🤖 {{ event.llm.model }} (${{ event.llm.cost?.toFixed(4) }})
                 </span>
               </div>
@@ -101,46 +101,59 @@
 
     <!-- Active Sessions/Flows -->
     <div v-if="!flowEvents.length">
-      <h3 class="text-lg font-semibold mb-3 text-white">Active Sessions</h3>
-      <div class="space-y-2">
-        <div
-          v-for="(session, id) in topSessions"
-          :key="id"
-          class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-3 hover:bg-gray-500/20 cursor-pointer transition"
-          @click="searchSessionId = id; searchBySession()"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-white text-sm font-mono">Session: {{ id.substring(0, 8) }}...</div>
-              <div class="text-xs text-gray-400 mt-1">
-                {{ session.requests }} requests • {{ formatDuration(session.duration) }}
+      <!-- Active Sessions -->
+      <div v-if="Object.keys(topSessions).length > 0">
+        <h3 class="text-lg font-semibold mb-3 text-white">Active Sessions</h3>
+        <div class="space-y-2">
+          <div
+            v-for="(session, id) in topSessions"
+            :key="id"
+            class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-3 hover:bg-gray-500/20 cursor-pointer transition"
+            @click="searchSessionId = id; searchBySession()"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-white text-sm font-mono">Session: {{ id.substring(0, 8) }}...</div>
+                <div class="text-xs text-gray-400 mt-1">
+                  {{ session.requests }} requests • {{ formatDuration(session.duration) }}
+                </div>
               </div>
+              <button class="text-blue-300 text-sm hover:text-blue-200">View →</button>
             </div>
-            <button class="text-blue-300 text-sm hover:text-blue-200">View →</button>
           </div>
         </div>
       </div>
 
-      <h3 class="text-lg font-semibold mb-3 mt-6 text-white">Active Users</h3>
-      <div class="space-y-2">
-        <div
-          v-for="(user, id) in topUsers"
-          :key="id"
-          class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-3 hover:bg-gray-500/20 cursor-pointer transition"
-          @click="searchUserId = id; searchByUser()"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-white text-sm">User: {{ id }}</div>
-              <div class="text-xs text-gray-400 mt-1">
-                {{ user.requests }} requests
-                <span v-if="user.llmCost > 0" class="ml-2 text-yellow-300">
-                  • ${{ user.llmCost.toFixed(4) }} LLM cost
-                </span>
+      <!-- Active Users -->
+      <div v-if="Object.keys(topUsers).length > 0" :class="{ 'mt-6': Object.keys(topSessions).length > 0 }">
+        <h3 class="text-lg font-semibold mb-3 text-white">Active Users</h3>
+        <div class="space-y-2">
+          <div
+            v-for="(user, id) in topUsers"
+            :key="id"
+            class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-3 hover:bg-gray-500/20 cursor-pointer transition"
+            @click="searchUserId = id; searchByUser()"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-white text-sm">User: {{ id }}</div>
+                <div class="text-xs text-gray-400 mt-1">
+                  {{ user.requests }} requests
+                  <span v-if="user.llmCost > 0" class="ml-2 text-yellow-300">
+                    • ${{ user.llmCost.toFixed(4) }} LLM cost
+                  </span>
+                </div>
               </div>
+              <button class="text-blue-300 text-sm hover:text-blue-200">View →</button>
             </div>
-            <button class="text-blue-300 text-sm hover:text-blue-200">View →</button>
           </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div v-if="Object.keys(topSessions).length === 0 && Object.keys(topUsers).length === 0" class="text-center py-12">
+        <div class="text-gray-500 text-sm">
+          No flow data yet. Make some requests with session or user IDs to see them here.
         </div>
       </div>
     </div>
