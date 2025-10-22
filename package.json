@@ -15,7 +15,7 @@
     "dev:web": "npm run dev -w @flowscope/web",
     "test:mock": "node test/mock-server.js",
     "test:run": "node test/test-requests.js",
-    "test:body": "node test/test-post-body.js"
+    "test:body": "node test/test-post-body.cjs"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
