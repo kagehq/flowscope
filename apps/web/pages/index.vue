@@ -417,19 +417,25 @@ function fmtTime(timestamp: number) {
             <h3 class="text-lg font-bold text-white mb-3">Available Actions</h3>
             <ul class="space-y-3 text-gray-300">
               <li class="flex items-start gap-3">
-                <span class="text-purple-300">🎭</span>
+                <svg class="w-5 h-5 text-purple-300 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
                 <div>
                   <strong>Export Mock Server:</strong> Generate a working Node.js mock server from captured traffic with realistic timings and error rates
                 </div>
               </li>
               <li class="flex items-start gap-3">
-                <span class="text-green-300">🔗</span>
+                <svg class="w-5 h-5 text-green-300 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
                 <div>
                   <strong>Share Session:</strong> Create a shareable link to captured requests (expires in 7 days)
                 </div>
               </li>
               <li class="flex items-start gap-3">
-                <span class="text-blue-300">📂</span>
+                <svg class="w-5 h-5 text-blue-300 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+                </svg>
                 <div>
                   <strong>View Saved Sessions:</strong> Access previously shared debugging sessions
                 </div>
