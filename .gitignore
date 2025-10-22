@@ -6,6 +6,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Important: DO NOT ignore package-lock.json (required for Docker builds)
+!package-lock.json
+
 # Build outputs
 dist/
 .nuxt/
