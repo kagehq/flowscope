@@ -438,7 +438,7 @@ function tryParseJSON(value: string | undefined): any {
             <button
               @click="toggleCompareMode"
               class="bg-gray-500/10 border flex items-center border-gray-500/10 text-white rounded-lg px-3 py-1.5 text-xs hover:bg-gray-500/20 transition-all"
-              :class="{ 'bg-purple-300 text-black border-purple-300 hover:bg-purple-300': compareMode }"
+              :class="{ 'bg-purple-300 text-black border-purple-300 hover:bg-purple-300 focus:text-black': compareMode }"
             >
               <svg class="w-3.5 h-3.5 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />

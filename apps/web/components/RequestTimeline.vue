@@ -9,33 +9,56 @@
     <div v-else class="relative">
       <!-- Timeline axis -->
       <div class="absolute left-0 right-0 top-1/2 h-px bg-gray-500/20"></div>
-
-      <!-- Events -->
-      <div class="relative flex items-center justify-between py-4 pb-16 overflow-x-auto">
-        <div
-          v-for="(event, idx) in timelineEvents"
-          :key="event.id"
-          class="relative flex flex-col items-center group cursor-pointer p-2 -m-2"
-          @click="$emit('select-event', event.id)"
-        >
-          <!-- Event dot -->
+      
+      <!-- Events (positioned by actual time) -->
+      <div class="relative h-20 overflow-x-auto">
+        <div class="absolute inset-0">
           <div
-            class="w-3 h-3 rounded-full border-2 border-gray-800 transition-transform group-hover:scale-150 z-10"
-            :class="{
-              'bg-green-300': event.res?.status && event.res.status >= 200 && event.res.status < 300,
-              'bg-yellow-300': event.res?.status && event.res.status >= 300 && event.res.status < 400,
-              'bg-red-400': event.res?.status && event.res.status >= 400,
-              'bg-gray-400': !event.res?.status,
-            }"
-            :title="`${event.req.method} ${event.req.path} - ${event.res?.status || 'pending'}`"
-          ></div>
+            v-for="(event, idx) in timelineEvents"
+            :key="event.id"
+            class="absolute top-1/2 -translate-y-1/2 group cursor-pointer"
+            :style="{ left: `${getEventPosition(event)}%` }"
+            @click="$emit('select-event', event.id)"
+          >
+            <!-- Event dot (sized by duration) -->
+            <div
+              class="rounded-full border-2 border-gray-800 transition-all group-hover:scale-150 z-10 flex items-center justify-center"
+              :class="[
+                getDotSizeClass(event),
+                {
+                  'bg-green-300 border-green-500': event.res?.status && event.res.status >= 200 && event.res.status < 300,
+                  'bg-yellow-300 border-yellow-500': event.res?.status && event.res.status >= 300 && event.res.status < 400,
+                  'bg-red-400 border-red-600': event.res?.status && event.res.status >= 400,
+                  'bg-gray-400 border-gray-600': !event.res?.status,
+                }
+              ]"
+              :title="`${event.req.method} ${event.req.path} - ${event.res?.status || 'pending'} - ${fmtMs(event.res?.durationMs)}`"
+            >
+              <!-- Method indicator (for larger dots) -->
+              <span v-if="event.res?.durationMs && event.res.durationMs > 500" class="text-[8px] font-bold text-black">
+                {{ event.req.method.slice(0, 1) }}
+              </span>
+            </div>
 
-          <!-- Hover info -->
-          <div class="absolute top-6 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black border border-gray-500/20 rounded-lg px-3 py-2 text-xs text-white whitespace-nowrap shadow-2xl z-[100] animate-scale-in">
-            <div class="font-mono font-semibold text-blue-300">{{ event.req.method }}</div>
-            <div class="text-gray-300 font-mono">{{ fmtMs(event.res?.durationMs) }}</div>
-            <!-- Arrow -->
-            <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-black border-l border-t border-gray-500/20 rotate-45"></div>
+            <!-- Hover info -->
+            <div class="absolute top-8 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black border border-gray-500/20 rounded-lg px-3 py-2 text-xs text-white whitespace-nowrap shadow-2xl z-[100] animate-scale-in">
+              <div class="font-mono font-semibold text-blue-300">{{ event.req.method }} {{ event.req.path }}</div>
+              <div class="text-gray-300 font-mono mt-1">
+                <span class="text-gray-500">Status:</span> 
+                <span :class="{
+                  'text-green-300': event.res?.status && event.res.status >= 200 && event.res.status < 300,
+                  'text-red-300': event.res?.status && event.res.status >= 400
+                }">{{ event.res?.status || '—' }}</span>
+              </div>
+              <div class="text-gray-300 font-mono">
+                <span class="text-gray-500">Duration:</span> {{ fmtMs(event.res?.durationMs) }}
+              </div>
+              <div class="text-gray-400 font-mono text-[10px] mt-1">
+                {{ formatTimeAgo(event.req.ts) }}
+              </div>
+              <!-- Arrow -->
+              <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-black border-l border-t border-gray-500/20 rotate-45"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -76,6 +99,44 @@ const oldestTime = computed(() => {
 
 function fmtMs(ms?: number) {
   return ms ? `${ms}ms` : '—';
+}
+
+// Position events based on actual timestamps (0% = oldest, 100% = newest)
+function getEventPosition(event: CapturedEvent): number {
+  if (timelineEvents.value.length <= 1) return 50;
+  
+  const oldest = timelineEvents.value[0].req.ts;
+  const newest = timelineEvents.value[timelineEvents.value.length - 1].req.ts;
+  const range = newest - oldest;
+  
+  if (range === 0) return 50;
+  
+  const position = ((event.req.ts - oldest) / range) * 90 + 5; // 5-95% to avoid edges
+  return position;
+}
+
+// Size dots based on response duration
+function getDotSizeClass(event: CapturedEvent): string {
+  const duration = event.res?.durationMs || 0;
+  
+  if (duration > 1000) return 'w-6 h-6'; // Very slow
+  if (duration > 500) return 'w-5 h-5';  // Slow
+  if (duration > 200) return 'w-4 h-4';  // Medium
+  return 'w-3 h-3';                       // Fast
+}
+
+// Format time ago for tooltip
+function formatTimeAgo(timestamp: number): string {
+  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+  
+  if (seconds < 5) return 'just now';
+  if (seconds < 60) return `${seconds}s ago`;
+  
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  
+  const hours = Math.floor(minutes / 60);
+  return `${hours}h ago`;
 }
 </script>
 
