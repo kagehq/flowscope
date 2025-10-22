@@ -317,19 +317,19 @@ const perfStats = computed(() => {
 // Sparkline data - group events into time buckets to show actual trends
 const requestsSparkline = computed(() => {
   if (events.value.length === 0) return [];
-  
+
   const bucketCount = 20;
   const recentEvents = events.value.slice(0, 100); // Look at last 100 events
-  
+
   if (recentEvents.length === 0) return [];
-  
+
   const oldest = recentEvents[recentEvents.length - 1].req.ts;
   const newest = recentEvents[0].req.ts;
   const range = newest - oldest || 1;
   const bucketSize = range / bucketCount;
-  
+
   const buckets = new Array(bucketCount).fill(0);
-  
+
   recentEvents.forEach(event => {
     const bucketIndex = Math.min(
       Math.floor((event.req.ts - oldest) / bucketSize),
@@ -337,25 +337,25 @@ const requestsSparkline = computed(() => {
     );
     buckets[bucketIndex]++;
   });
-  
+
   return buckets;
 });
 
 const errorsSparkline = computed(() => {
   if (events.value.length === 0) return [];
-  
+
   const bucketCount = 20;
   const recentEvents = events.value.slice(0, 100);
-  
+
   if (recentEvents.length === 0) return [];
-  
+
   const oldest = recentEvents[recentEvents.length - 1].req.ts;
   const newest = recentEvents[0].req.ts;
   const range = newest - oldest || 1;
   const bucketSize = range / bucketCount;
-  
+
   const buckets = new Array(bucketCount).fill(0);
-  
+
   recentEvents.forEach(event => {
     if (event.res?.status && event.res.status >= 400) {
       const bucketIndex = Math.min(
@@ -365,25 +365,25 @@ const errorsSparkline = computed(() => {
       buckets[bucketIndex]++;
     }
   });
-  
+
   return buckets;
 });
 
 const costSparkline = computed(() => {
   if (events.value.length === 0) return [];
-  
+
   const bucketCount = 20;
   const recentEvents = events.value.slice(0, 100).filter(ev => ev.llm?.cost);
-  
+
   if (recentEvents.length === 0) return [];
-  
+
   const oldest = recentEvents[recentEvents.length - 1].req.ts;
   const newest = recentEvents[0].req.ts;
   const range = newest - oldest || 1;
   const bucketSize = range / bucketCount;
-  
+
   const buckets = new Array(bucketCount).fill(0);
-  
+
   recentEvents.forEach(event => {
     const bucketIndex = Math.min(
       Math.floor((event.req.ts - oldest) / bucketSize),
@@ -391,7 +391,7 @@ const costSparkline = computed(() => {
     );
     buckets[bucketIndex] += event.llm?.cost || 0;
   });
-  
+
   return buckets;
 });
 
@@ -761,14 +761,17 @@ function tryParseJSON(value: string | undefined): any {
             <div class="flex items-center gap-2">
               <span class="text-xs text-gray-400">Requests:</span>
               <Sparkline v-if="requestsSparkline.length > 0" :data="requestsSparkline" :width="60" :height="20" color="#6ee7b7" class="opacity-70" />
+              <span class="text-xs font-mono text-green-300">{{ events.length }}</span>
             </div>
             <div class="flex items-center gap-2">
               <span class="text-xs text-gray-400">Errors:</span>
               <Sparkline v-if="errorsSparkline.length > 0" :data="errorsSparkline" :width="60" :height="20" color="#fca5a5" class="opacity-70" />
+              <span class="text-xs font-mono text-red-300">{{ events.filter(e => e.res?.status && e.res.status >= 400).length }}</span>
             </div>
             <div v-if="hasLLMRequests" class="flex items-center gap-2">
               <span class="text-xs text-gray-400">Cost:</span>
               <Sparkline v-if="costSparkline.length > 0" :data="costSparkline" :width="60" :height="20" color="#fde047" class="opacity-70" />
+              <span class="text-xs font-mono text-yellow-300">${{ events.reduce((sum, e) => sum + (e.llm?.cost || 0), 0).toFixed(3) }}</span>
             </div>
           </div>
 
