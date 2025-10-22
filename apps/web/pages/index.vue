@@ -409,9 +409,9 @@ function fmtTime(timestamp: number) {
 
       <!-- Export & Share Tab -->
       <div v-if="activeTab === 'actions'" class="p-6 max-w-4xl">
-        <h2 class="text-2xl font-bold text-white mb-4">🎭 Export & Share</h2>
+        <h2 class="text-2xl font-bold text-white mb-4">Export & Share</h2>
         <div class="space-y-4">
-          <ActionBar :selectedEventId="expandedEventId" />
+          <ActionBar :selectedEventId="expandedEventId ?? undefined" />
 
           <div class="bg-gray-500/5 border border-gray-500/10 rounded-lg p-6 mt-6">
             <h3 class="text-lg font-bold text-white mb-3">Available Actions</h3>

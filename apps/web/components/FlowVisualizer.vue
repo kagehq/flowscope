@@ -107,15 +107,15 @@
         <div class="space-y-2">
           <div
             v-for="(session, id) in topSessions"
-            :key="id"
+            :key="String(id)"
             class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-3 hover:bg-gray-500/20 cursor-pointer transition"
-            @click="searchSessionId = id; searchBySession()"
+            @click="searchSessionId = String(id); searchBySession()"
           >
             <div class="flex items-center justify-between">
               <div>
-                <div class="text-white text-sm font-mono">Session: {{ id.substring(0, 8) }}...</div>
+                <div class="text-white text-sm font-mono">Session: {{ String(id).substring(0, 8) }}...</div>
                 <div class="text-xs text-gray-400 mt-1">
-                  {{ session.requests }} requests • {{ formatDuration(session.duration) }}
+                  {{ (session as any).requests }} requests • {{ formatDuration((session as any).duration) }}
                 </div>
               </div>
               <button class="text-blue-300 text-sm hover:text-blue-200">View →</button>
@@ -130,17 +130,17 @@
         <div class="space-y-2">
           <div
             v-for="(user, id) in topUsers"
-            :key="id"
+            :key="String(id)"
             class="bg-gray-500/10 border border-gray-500/10 rounded-lg p-3 hover:bg-gray-500/20 cursor-pointer transition"
-            @click="searchUserId = id; searchByUser()"
+            @click="searchUserId = String(id); searchByUser()"
           >
             <div class="flex items-center justify-between">
               <div>
                 <div class="text-white text-sm">User: {{ id }}</div>
                 <div class="text-xs text-gray-400 mt-1">
-                  {{ user.requests }} requests
-                  <span v-if="user.llmCost > 0" class="ml-2 text-yellow-300">
-                    • ${{ user.llmCost.toFixed(4) }} LLM cost
+                  {{ (user as any).requests }} requests
+                  <span v-if="(user as any).llmCost > 0" class="ml-2 text-yellow-300">
+                    • ${{ (user as any).llmCost.toFixed(4) }} LLM cost
                   </span>
                 </div>
               </div>

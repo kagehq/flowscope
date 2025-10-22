@@ -4,27 +4,27 @@
     <button
       @click="exportMock"
       :disabled="exporting"
-      class="px-3 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 rounded text-sm text-white transition flex items-center gap-2"
+      class="px-3 py-2 bg-purple-300 font-medium hover:bg-purple-400 disabled:bg-gray-700 rounded-lg text-sm text-black transition flex items-center gap-2"
     >
-      <span>{{ exporting ? '⏳' : '🎭' }}</span>
+      <!-- <span>{{ exporting ? '⏳' : '🎭' }}</span> -->
       <span>Export Mock Server</span>
     </button>
 
     <!-- Share Session -->
     <button
       @click="showShareModal = true"
-      class="px-3 py-2 bg-green-600 hover:bg-green-700 rounded text-sm text-white transition flex items-center gap-2"
+      class="px-3 py-2 bg-green-300 font-medium hover:bg-green-400 rounded-lg text-sm text-black transition flex items-center gap-2"
     >
-      <span>🔗</span>
+      <!-- <span>🔗</span> -->
       <span>Share Session</span>
     </button>
 
     <!-- View Saved Sessions -->
     <button
       @click="showSessionsModal = true"
-      class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm text-white transition flex items-center gap-2"
+      class="px-3 py-2 bg-blue-300 font-medium hover:bg-blue-400 rounded-lg text-sm text-black transition flex items-center gap-2"
     >
-      <span>📂</span>
+      <!-- <span>📂</span> -->
       <span>Saved Sessions</span>
     </button>
 
@@ -41,7 +41,7 @@
     <div v-if="showShareModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click="showShareModal = false">
       <div class="bg-gray-900 border border-gray-500/10 rounded-lg p-6 max-w-md w-full mx-4" @click.stop>
         <h3 class="text-xl font-bold text-white mb-4">📤 Share Session</h3>
-        
+
         <div class="space-y-4">
           <div>
             <label class="text-sm text-gray-400">Session Name</label>
@@ -112,7 +112,7 @@
     <div v-if="showSessionsModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click="showSessionsModal = false">
       <div class="bg-gray-900 border border-gray-500/10 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-auto" @click.stop>
         <h3 class="text-xl font-bold text-white mb-4">📂 Saved Sessions</h3>
-        
+
         <div v-if="loadingSessions" class="text-gray-400 text-center py-8">
           Loading sessions...
         </div>
@@ -190,10 +190,10 @@ async function exportMock() {
     exporting.value = true;
     const apiBase = 'http://localhost:4317';
     const since = Date.now() - shareTimeRange.value;
-    
+
     // Open in new tab to trigger download
     window.open(`${apiBase}/mock/generate?since=${since}&format=js`, '_blank');
-    
+
     setTimeout(() => {
       exporting.value = false;
     }, 1000);
@@ -207,7 +207,7 @@ async function createSession() {
   try {
     creating.value = true;
     const apiBase = 'http://localhost:4317';
-    
+
     const body: any = {
       name: sessionName.value || `Session ${new Date().toLocaleString()}`,
       since: Date.now() - shareTimeRange.value,
@@ -225,7 +225,7 @@ async function createSession() {
 
     const data = await response.json();
     sessionUrl.value = data.url;
-    
+
     // Get session details to show event count
     const sessionResponse = await fetch(`${apiBase}${data.url}`);
     const sessionData = await sessionResponse.json();
