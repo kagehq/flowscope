@@ -47,17 +47,113 @@ npm run dev
 
 ## Usage
 
-Point your app to use FlowScope as a proxy:
+FlowScope acts as an HTTP proxy - just route your requests through it:
+
+### Basic Example
 
 ```javascript
 // Before:
-fetch('http://localhost:3000/api/users')
+fetch('https://api.example.com/users')
 
-// After:
-fetch('http://localhost:4317/proxy/api/users')
+// After (through FlowScope):
+fetch('http://localhost:4317/proxy/https://api.example.com/users')
 ```
 
 That's it! All requests now appear in the dashboard in real-time.
+
+### Frontend Integration
+
+**With fetch:**
+```javascript
+// Add this helper to your project
+const proxyUrl = (url) => {
+  return process.env.NODE_ENV === 'development' 
+    ? `http://localhost:4317/proxy/${url}`
+    : url;
+};
+
+// Use it everywhere
+fetch(proxyUrl('https://api.example.com/users'));
+```
+
+**With axios:**
+```javascript
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: process.env.NODE_ENV === 'development'
+    ? 'http://localhost:4317/proxy/https://api.example.com'
+    : 'https://api.example.com'
+});
+
+// All requests automatically flow through FlowScope in dev
+api.get('/users');
+api.post('/users', { name: 'Alice' });
+```
+
+### Backend Integration (Node.js)
+
+**Using environment variables (recommended):**
+
+```bash
+# .env.local
+API_BASE_URL=http://localhost:4317/proxy/https://api.example.com
+# For production: API_BASE_URL=https://api.example.com
+```
+
+```javascript
+const API_BASE = process.env.API_BASE_URL;
+
+fetch(`${API_BASE}/users`);
+fetch(`${API_BASE}/orders/123`);
+```
+
+### LLM/AI Integration
+
+**OpenAI SDK:**
+```javascript
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: 'http://localhost:4317/proxy/https://api.openai.com/v1',
+});
+
+// All requests captured + auto-exported to Arize Phoenix!
+const completion = await openai.chat.completions.create({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Hello!' }],
+});
+```
+
+**Anthropic Claude:**
+```javascript
+import Anthropic from '@anthropic-ai/sdk';
+
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  baseURL: 'http://localhost:4317/proxy/https://api.anthropic.com',
+});
+
+const message = await anthropic.messages.create({
+  model: 'claude-3-5-sonnet-20241022',
+  max_tokens: 1024,
+  messages: [{ role: 'user', content: 'Hello!' }],
+});
+```
+
+**Any HTTP library:**
+```javascript
+// Works with any HTTP client - just prefix the URL
+await fetch('http://localhost:4317/proxy/https://api.cohere.ai/v1/chat', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${process.env.COHERE_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ message: 'Hello' }),
+});
+```
 
 ### Try It Out
 
