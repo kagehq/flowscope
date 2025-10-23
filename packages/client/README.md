@@ -45,13 +45,13 @@ Press `Cmd+K` to open the panel. That's it! 🎉
 
 ## Features
 
-- ⚡ **Auto-instruments** fetch, XHR, WebSocket — no code changes needed
-- 🎨 **Beautiful DevTools-style panel** — resizable, dockable, minimal
-- 🔍 **Search & filter** — find requests instantly
-- 📊 **Performance metrics** — timing, errors, costs
-- 💾 **Export** — HAR, JSON, CSV formats
-- 🔒 **Production-safe** — environment controls + auto-redaction
-- 🎯 **Framework-agnostic** — works everywhere
+- **Auto-instruments** fetch, XHR, WebSocket — no code changes needed
+- **Beautiful DevTools-style panel** — resizable, dockable, minimal
+- **Search & filter** — find requests instantly
+- **Performance metrics** — timing, errors, costs
+- **Export** — HAR, JSON, CSV formats
+- **Production-safe** — environment controls + auto-redaction
+- **Framework-agnostic** — works everywhere
 
 ## Configuration
 

@@ -4,7 +4,7 @@
 
 Find issues in **10 seconds** instead of **5 minutes of scrolling**.
 
-> **🆕 Now available as an embeddable SDK!** Add Chrome DevTools Network tab directly to your app—no proxy needed. [Jump to Embedded SDK →](#-new-embeddable-client-sdk)
+> **Now available as an embeddable SDK!** Add Chrome DevTools Network tab directly to your app—no proxy needed. [Jump to Embedded SDK →](#-new-embeddable-client-sdk)
 
 ## Why FlowScope?
 
@@ -37,7 +37,6 @@ Join our Discord community for discussions, support, and updates:
 
 Want to embed FlowScope **directly into your web app**? No proxies, no separate tools—just a Chrome DevTools-like network monitor inside your application!
 
-**Install via npm:**
 ```bash
 npm install @flowscope/client
 ```
@@ -47,97 +46,16 @@ import Flowscope from '@flowscope/client';
 Flowscope.init();
 ```
 
-**Or use CDN (no build step):**
-```html
-<script src="https://unpkg.com/@flowscope/client@latest/dist/index.js"></script>
-<script>
-  Flowscope.init();
-</script>
-```
+Press `Cmd+K` to toggle the panel. Auto-captures all fetch/XHR calls, provides search/filtering, performance metrics, HAR export, and production-safe authentication.
 
-Press `Cmd+K` to toggle the panel - that's it!
+**✨ Features:**
+- Auto-instruments fetch, XHR, WebSocket
+- Beautiful DevTools-style resizable panel
+- Search, filter, compare, export
+- React & Vue integrations
+- Production-ready security
 
-### ✨ What You Get
-
-- 📋 **Live request monitoring** - Automatically captures all fetch/XHR calls
-- 📊 **Visual timeline** - See request timing and performance at a glance
-- ⚠️ **Error analysis** - Grouped errors with 4xx/5xx breakdown
-- 📈 **Performance stats** - Avg/min/max response times, success rates
-- 🔄 **Compare mode** - Side-by-side diff of any 2 requests
-- 📥 **Export HAR** - Download for Chrome DevTools or Postman
-- ⌨️ **Keyboard shortcuts** - Toggle with Cmd+K
-- 🔒 **Production-safe** - Environment controls + access key protection
-
-### Framework Integration
-
-**React:**
-```jsx
-import { useFlowscope } from '@flowscope/client/react';
-
-function App() {
-  useFlowscope();
-  return <YourApp />;
-}
-```
-
-**Vue 3:**
-```vue
-<script setup>
-import { useFlowscope } from '@flowscope/client/vue';
-useFlowscope();
-</script>
-```
-
-### 🎯 Try the Demo
-
-```bash
-cd packages/client
-open demo.html
-```
-
-### 🔒 Production-Ready Security
-
-Flowscope includes enterprise-grade security for production deployments:
-
-#### Development (Simple)
-```javascript
-// Auto-enabled in dev environments
-Flowscope.init({
-  environments: ['development'], // Only active on localhost
-});
-```
-
-#### Production (Secure - Backend Verified)
-```javascript
-// In your app - NO secrets in client code!
-Flowscope.init({
-  environments: [],
-  apiEndpoint: '/api/debug/flowscope-activate', // Your backend API
-});
-
-// User activates in console:
-await Flowscope.requestActivation();
-// ✅ Flowscope activated! (after backend verification)
-```
-
-**Your backend validates:**
-- ✅ User authentication (who is requesting?)
-- ✅ User role/permissions (admin/support only)
-- ✅ Organization membership
-- ✅ Domain authorization
-- ✅ Generates time-limited JWT token (4 hours)
-
-**Security model:**
-- 🔐 **No secrets in client code** - Access control on backend
-- 🔐 **Organization-scoped** - Tied to your org database
-- 🔐 **Domain-locked** - Token only works on authorized domains
-- 🔐 **Time-limited** - Tokens expire after N hours
-- 🔐 **Audit trail** - Log all activations
-- 🔐 **Rate limited** - Prevent abuse
-
-**📖 Full production setup:** [packages/client/AUTHENTICATION.md](./packages/client/AUTHENTICATION.md)
-
-**Full documentation:** [packages/client/README.md](./packages/client/README.md)
+**📖 Full documentation:** [packages/client/README.md](./packages/client/README.md)
 
 ### 🤔 Embedded SDK vs Proxy Mode
 
