@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Flowscope Resize</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: white;
+      padding: 40px;
+      margin: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #38bdf8;
+      margin-bottom: 10px;
+    }
+    p {
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 30px;
+    }
+    .instructions {
+      background: rgba(14, 165, 233, 0.1);
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .instructions h2 {
+      color: #38bdf8;
+      font-size: 18px;
+      margin: 0 0 15px 0;
+    }
+    .instructions ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .instructions li {
+      margin: 10px 0;
+      line-height: 1.6;
+    }
+    button {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 5px;
+      transition: all 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+    }
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    code {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚡ Flowscope Resize Test</h1>
+    <p>Test the drag-to-resize functionality</p>
+
+    <div class="instructions">
+      <h2>🎯 How to Test the Resize Feature:</h2>
+      <ol>
+        <li>Press <code>Cmd+K</code> (or <code>Ctrl+K</code>) to open the Flowscope panel</li>
+        <li>Hover over the <strong>top edge</strong> of the panel - you'll see a resize indicator</li>
+        <li><strong>Click and drag up/down</strong> to resize the panel height</li>
+        <li>Release to save the height (stored in localStorage)</li>
+        <li>Close and reopen the panel - it remembers your size!</li>
+        <li>Try the buttons below to generate some network requests</li>
+      </ol>
+    </div>
+
+    <h2 style="color: #38bdf8; margin-bottom: 15px;">Test Network Requests:</h2>
+    <div class="button-group">
+      <button onclick="testSuccess()">✅ Success (200)</button>
+      <button onclick="testError()">❌ Error (404)</button>
+      <button onclick="testSlow()">🐢 Slow (3s)</button>
+      <button onclick="testMultiple()">🔥 Multiple Requests</button>
+      <button onclick="testPost()">📤 POST Request</button>
+    </div>
+  </div>
+
+  <!-- Load the SDK from dist -->
+  <script type="module">
+    import Flowscope from './dist/index.mjs';
+
+    // Initialize Flowscope
+    Flowscope.init({
+      enabled: true,
+      theme: 'dark',
+      hotkey: 'cmd+k,ctrl+k'
+    });
+
+    // Test functions
+    window.testSuccess = async () => {
+      await fetch('https://api.github.com/users/github');
+    };
+
+    window.testError = async () => {
+      try {
+        await fetch('https://api.github.com/nonexistent-endpoint-404');
+      } catch (e) {}
+    };
+
+    window.testSlow = async () => {
+      await fetch('https://httpbin.org/delay/3');
+    };
+
+    window.testMultiple = async () => {
+      const promises = [
+        fetch('https://api.github.com/users/torvalds'),
+        fetch('https://api.github.com/users/gaearon'),
+        fetch('https://api.github.com/users/tj'),
+        fetch('https://api.github.com/users/sindresorhus'),
+      ];
+      await Promise.all(promises.map(p => p.catch(e => e)));
+    };
+
+    window.testPost = async () => {
+      await fetch('https://httpbin.org/post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          test: 'data',
+          timestamp: Date.now(),
+          message: 'Testing Flowscope!'
+        })
+      });
+    };
+
+    console.log('✅ Flowscope loaded! Press Cmd+K to open.');
+  </script>
+</body>
+</html>
+

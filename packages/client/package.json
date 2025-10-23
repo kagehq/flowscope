@@ -1,0 +1,67 @@
+{
+  "name": "@flowscope/client",
+  "version": "0.1.0",
+  "description": "Embeddable network observability for web apps",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "unpkg": "dist/index.js",
+  "jsdelivr": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.mjs",
+      "require": "./dist/react.js"
+    },
+    "./vue": {
+      "types": "./dist/vue.d.ts",
+      "import": "./dist/vue.mjs",
+      "require": "./dist/vue.js"
+    }
+  },
+  "scripts": {
+    "dev": "npm run build:css && npm run sync:css && tsup --watch",
+    "build": "npm run build:css && npm run sync:css && tsup",
+    "build:css": "postcss src/ui/panel.css -o dist/panel.css",
+    "sync:css": "node scripts/sync-css.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "devtools",
+    "network",
+    "debugging",
+    "observability",
+    "requests"
+  ],
+  "author": "Flowscope",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "vue": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.16",
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.2.2",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "postcss-cli": "^11.0.1",
+    "tailwindcss": "^4.1.16",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vue": "^3.5.22"
+  }
+}

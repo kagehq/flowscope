@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flowscope Client SDK - Demo & Quick Start</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: black;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    .hero {
+      text-align: center;
+      color: white;
+      margin-bottom: 60px;
+    }
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    .hero p {
+      font-size: 20px;
+      opacity: 0.9;
+      margin-bottom: 32px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      margin: 0 4px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+    .card h2 { font-size: 24px; margin-bottom: 16px; color: #1f2937; }
+    .card p { color: #6b7280; line-height: 1.6; margin-bottom: 24px; }
+    .button-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    button {
+      /* background: linear-gradient(135deg, #10b981 0%, #059669 100%); */
+      /* color: white;
+      border: none;
+      padding: 14px 24px; */
+      /* border-radius: 10px; */
+      /* font-size: 14px;
+      font-weight: 600;
+      cursor: pointer; */
+      /* transition: all 0.2s; */
+      /* box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3); */
+    }
+    button:hover {
+      /* transform: translateY(-2px); */
+      /* box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); */
+    }
+    button.secondary {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      /* box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3); */
+    }
+    button.danger {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      /* box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3); */
+    }
+    .hint {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 24px;
+      color: #92400e;
+      font-size: 14px;
+    }
+    kbd {
+      background: #1f2937;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <h1>Flowscope Client SDK</h1>
+      <p>Chrome DevTools Network tab — inside your own app</p>
+    </div>
+
+    <div class="card">
+      <h2>Try the Demo</h2>
+      <p>Click the buttons below to make test requests, then press <kbd>Cmd+K</kbd> to see the magic!</p>
+
+      <div class="button-group">
+        <button onclick="testSuccess()">Success (200)</button>
+        <button onclick="testError()" class="danger">Error (404)</button>
+        <button onclick="testSlow()" class="secondary">Slow (3s)</button>
+        <button onclick="testPost()" class="secondary">POST with body</button>
+        <button onclick="testMultiple()" class="secondary">Multiple (5)</button>
+      </div>
+
+      <div class="hint">
+        <strong>How to use:</strong>
+        Press <kbd>Cmd+K</kbd> to toggle panel •
+        Switch between List/Timeline/Errors/Stats tabs •
+        Click any request to expand details •
+        Click Compare button + select 2 requests •
+        Export to HAR for Chrome DevTools
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Production-Ready Security</h2>
+      <p style="margin-bottom: 16px;">Control when Flowscope is active and require an access key for production use:</p>
+
+      <pre style="background: #1f2937; color: #10b981; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">Flowscope.<span style="color: #34d399;">init</span>({
+  <span style="color: #9ca3af;">// Only active in these environments</span>
+  <span style="color: #fbbf24;">environments</span>: [<span style="color: #34d399;">'development'</span>, <span style="color: #34d399;">'staging'</span>],
+
+  <span style="color: #9ca3af;">// Require access key for production</span>
+  <span style="color: #fbbf24;">accessKey</span>: <span style="color: #34d399;">'your-secret-key'</span>,
+
+  <span style="color: #9ca3af;">// Optional: Domain lock</span>
+  <span style="color: #fbbf24;">allowedDomains</span>: [<span style="color: #34d399;">'myapp.com'</span>],
+});
+
+<span style="color: #9ca3af;">// In production console, activate with:</span>
+Flowscope.<span style="color: #34d399;">activate</span>(<span style="color: #34d399;">'your-secret-key'</span>);</pre>
+
+      <p style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 12px; border-radius: 4px; color: #1e40af; font-size: 14px; margin-bottom: 24px;">
+        <strong>💡 Try it:</strong> Open the console and run <code style="background: #bfdbfe; padding: 2px 6px; border-radius: 3px;">Flowscope.activate('demo-key')</code> to test the access key system!
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>⚡ Quick Start</h2>
+
+      <p style="margin-bottom: 12px;"><strong>Option 1: Via CDN (No build step)</strong></p>
+      <pre style="background: #1f2937; color: #10b981; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; line-height: 1.6; margin-bottom: 24px;"><span style="color: #9ca3af;">&lt;!-- Add to your HTML --&gt;</span>
+<span style="color: #f87171;">&lt;script</span> <span style="color: #fbbf24;">src</span>=<span style="color: #34d399;">"https://unpkg.com/@flowscope/client@latest/dist/index.js"</span><span style="color: #f87171;">&gt;&lt;/script&gt;</span>
+<span style="color: #f87171;">&lt;script&gt;</span>
+  <span style="color: #9ca3af;">// Initialize Flowscope</span>
+  Flowscope.<span style="color: #34d399;">init</span>();
+<span style="color: #f87171;">&lt;/script&gt;</span></pre>
+
+      <p style="margin-bottom: 12px;"><strong>Option 2: Via npm</strong></p>
+      <pre style="background: #1f2937; color: #10b981; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; line-height: 1.6;">npm install @flowscope/client
+
+<span style="color: #60a5fa;">import</span> Flowscope <span style="color: #60a5fa;">from</span> <span style="color: #fbbf24;">'@flowscope/client'</span>;
+Flowscope.<span style="color: #34d399;">init</span>();</pre>
+      <p style="margin-top: 16px;">That's it! Press <kbd>Cmd+K</kbd> to toggle the panel.</p>
+      </div>
+
+    <div class="card">
+      <h2>🎨 Framework Integration</h2>
+      <p style="margin-bottom: 20px;"><strong>React:</strong></p>
+      <pre style="background: #1f2937; color: #10b981; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; line-height: 1.6; margin-bottom: 24px;"><span style="color: #60a5fa;">import</span> { useFlowscope } <span style="color: #60a5fa;">from</span> <span style="color: #fbbf24;">'@flowscope/client/react'</span>;
+
+<span style="color: #60a5fa;">function</span> <span style="color: #34d399;">App</span>() {
+  <span style="color: #34d399;">useFlowscope</span>();
+  <span style="color: #60a5fa;">return</span> &lt;<span style="color: #f87171;">YourApp</span> /&gt;;
+}</pre>
+
+      <p style="margin-bottom: 20px;"><strong>Vue 3:</strong></p>
+      <pre style="background: #1f2937; color: #10b981; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; line-height: 1.6;">&lt;<span style="color: #f87171;">script</span> <span style="color: #fbbf24;">setup</span>&gt;
+<span style="color: #60a5fa;">import</span> { useFlowscope } <span style="color: #60a5fa;">from</span> <span style="color: #fbbf24;">'@flowscope/client/vue'</span>;
+<span style="color: #34d399;">useFlowscope</span>();
+&lt;/<span style="color: #f87171;">script</span>&gt;</pre>
+    </div>
+
+    <div class="card">
+      <h2>✨ Features</h2>
+      <div style="display: grid; gap: 16px;">
+        <div style="display: flex; gap: 12px; align-items: start;">
+          <span style="font-size: 24px;">📋</span>
+          <div>
+            <strong style="color: #1f2937;">List View</strong>
+            <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">All requests with status, duration, expandable JSON details</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: start;">
+          <span style="font-size: 24px;">📊</span>
+          <div>
+            <strong style="color: #1f2937;">Timeline View</strong>
+            <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">Visual timeline with dots sized by response time</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: start;">
+          <span style="font-size: 24px;">⚠️</span>
+          <div>
+            <strong style="color: #1f2937;">Error Analysis</strong>
+            <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">Grouped errors with 4xx/5xx breakdown and stats</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: start;">
+          <span style="font-size: 24px;">📈</span>
+          <div>
+            <strong style="color: #1f2937;">Performance Stats</strong>
+            <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">Avg/min/max response times, success rates</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: start;">
+          <span style="font-size: 24px;">🔄</span>
+          <div>
+            <strong style="color: #1f2937;">Compare Mode</strong>
+            <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">Side-by-side diff of any 2 requests</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: start;">
+          <span style="font-size: 24px;">📥</span>
+          <div>
+            <strong style="color: #1f2937;">Export HAR</strong>
+            <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">Download for Chrome DevTools or Postman</p>
+          </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Use the actual SDK -->
+  <script type="module">
+    // Import the real Flowscope SDK
+    import Flowscope from './dist/index.mjs';
+
+    // Initialize with the SDK
+    Flowscope.init({
+      enabled: true,
+      theme: 'dark',
+      hotkey: 'cmd+k,ctrl+k'
+    });
+
+    console.log('⚡ Flowscope SDK loaded! Press Cmd+K to open.');
+
+    // Test functions
+    window.testSuccess = async () => {
+      console.log('Making successful request...');
+      await fetch('https://api.github.com/users/github');
+    };
+
+    window.testError = async () => {
+      console.log('Making error request...');
+      try {
+        await fetch('https://api.github.com/nonexistent-endpoint-404');
+      } catch (e) {
+        console.log('Request failed (expected)');
+      }
+    };
+
+    window.testSlow = async () => {
+      console.log('Making slow request (3s)...');
+      await fetch('https://httpbin.org/delay/3');
+    };
+
+    window.testMultiple = async () => {
+      console.log('Making multiple requests...');
+      const promises = [
+        fetch('https://api.github.com/users/torvalds'),
+        fetch('https://api.github.com/users/gaearon'),
+        fetch('https://api.github.com/users/tj'),
+        fetch('https://api.github.com/users/sindresorhus'),
+        fetch('https://api.github.com/users/addyosmani'),
+      ];
+      await Promise.all(promises.map(p => p.catch(e => e)));
+    };
+
+    window.testPost = async () => {
+      console.log('Making POST request...');
+      await fetch('https://httpbin.org/post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'John',
+          email: 'john@example.com',
+          timestamp: Date.now()
+        })
+      });
+    };
+
+    window.testLargeResponse = async () => {
+      console.log('Making large response request...');
+      await fetch('https://api.github.com/repos/microsoft/vscode/commits');
+    };
+
+    // Expose Flowscope globally for console access
+    window.Flowscope = Flowscope;
+  </script>
+
+  <!-- OLD INLINE IMPLEMENTATION REMOVED -->
+  <!-- The demo now uses the real SDK from ./dist/index.mjs -->
+  <script style="display: none;">
+    /* OLD CODE - Keeping for reference but not executing
+    class FlowscopeUltimate {
+      constructor() {
+        this.events = [];
+        this.panelVisible = false;
+        this.currentView = 'list';
+        this.expandedId = null;
+        this.compareMode = false;
+        this.selectedForCompare = [];
+        this.config = {};
+        this.isActivated = false;
+        this.activationAttempts = 0;
+        this.maxAttempts = 5;
+
+        // Resize functionality
+        this.isResizing = false;
+        this.startY = 0;
+        this.startHeight = 0;
+        this.panelHeight = localStorage.getItem('flowscope-panel-height')
+          ? parseInt(localStorage.getItem('flowscope-panel-height'))
+          : 400;
+      }
+
+      init(config = {}) {
+        this.config = {
+          environments: ['development'],
+          accessKey: null,
+          allowedDomains: [],
+          enabled: true,
+          ...config
+        };
+
+        // Check if we should be active
+        if (!this.shouldActivate()) {
+          console.log('🔒 Flowscope: Not active in this environment. Use Flowscope.activate("your-key") to enable.');
+          return;
+        }
+
+        this.isActivated = true;
+        this.patchFetch();
+        this.createUI();
+        this.setupKeyboard();
+        console.log('🎉 Flowscope initialized!');
+      }
+
+      shouldActivate() {
+        const env = this.getEnvironment();
+
+        // If no environment restrictions, always activate
+        if (!this.config.environments || this.config.environments.length === 0) {
+          return this.config.enabled !== false;
+        }
+
+        // Check if current environment is in allowed list
+        return this.config.environments.includes(env);
+      }
+
+      getEnvironment() {
+        // Try to detect environment
+        if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV) {
+          return process.env.NODE_ENV;
+        }
+
+        // Check hostname
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+          return 'development';
+        }
+        if (hostname.includes('staging') || hostname.includes('dev')) {
+          return 'staging';
+        }
+
+        return 'production';
+      }
+
+      activate(accessKey) {
+        // Rate limiting
+        if (this.activationAttempts >= this.maxAttempts) {
+          console.error('🚫 Flowscope: Too many activation attempts. Reload the page to try again.');
+          return false;
+        }
+
+        this.activationAttempts++;
+
+        // Validate access key
+        if (!this.config.accessKey) {
+          console.error('🚫 Flowscope: No access key configured. Set accessKey in config.');
+          return false;
+        }
+
+        if (accessKey !== this.config.accessKey) {
+          console.error('🚫 Flowscope: Invalid access key. Attempt ' + this.activationAttempts + '/' + this.maxAttempts);
+          return false;
+        }
+
+        // Check domain restriction
+        if (this.config.allowedDomains && this.config.allowedDomains.length > 0) {
+          const currentDomain = window.location.hostname;
+          if (!this.config.allowedDomains.includes(currentDomain)) {
+            console.error('🚫 Flowscope: Access key not valid for domain: ' + currentDomain);
+            return false;
+          }
+        }
+
+        // Success!
+        this.isActivated = true;
+        this.patchFetch();
+        this.createUI();
+        this.setupKeyboard();
+        console.log('✅ Flowscope activated successfully! Press Cmd+K to toggle.');
+        return true;
+      }
+
+      isActive() {
+        return this.isActivated;
+      }
+
+      patchFetch() {
+        const originalFetch = window.fetch;
+        const self = this;
+
+        window.fetch = async function(...args) {
+          const start = performance.now();
+          const id = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+
+          const event = {
+            id,
+            type: 'fetch',
+            method: args[1]?.method || 'GET',
+            url: args[0],
+            timestamp: Date.now(),
+            status: null,
+            duration: null,
+            error: null,
+            requestHeaders: self.extractHeaders(args[1]?.headers),
+            requestBody: args[1]?.body ? self.parseBody(args[1].body) : null,
+            responseHeaders: null,
+            responseBody: null,
+          };
+
+          self.addEvent(event);
+
+          try {
+            const response = await originalFetch(...args);
+            const end = performance.now();
+            const clonedResponse = response.clone();
+
+            event.status = response.status;
+            event.duration = Math.round(end - start);
+            event.responseHeaders = self.extractResponseHeaders(response.headers);
+            event.responseBody = await self.readResponseBody(clonedResponse);
+
+            self.updateEvent(event);
+            return response;
+          } catch (error) {
+            const end = performance.now();
+            event.status = 0;
+            event.duration = Math.round(end - start);
+            event.error = error.message;
+            self.updateEvent(event);
+            throw error;
+          }
+        };
+      }
+
+      extractHeaders(headers) {
+        if (!headers) return {};
+        if (headers instanceof Headers) {
+          const obj = {};
+          headers.forEach((value, key) => obj[key] = value);
+          return obj;
+        }
+        return headers;
+      }
+
+      extractResponseHeaders(headers) {
+        const obj = {};
+        headers.forEach((value, key) => obj[key] = value);
+        return obj;
+      }
+
+      parseBody(body) {
+        if (typeof body === 'string') {
+          try { return JSON.parse(body); } catch { return body; }
+        }
+        return body;
+      }
+
+      async readResponseBody(response) {
+        try {
+          const contentType = response.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            return await response.json();
+          }
+          return await response.text();
+        } catch {
+          return '[Unable to read body]';
+        }
+      }
+
+      createUI() {
+        const container = document.createElement('div');
+        container.id = 'flowscope-root';
+        container.style.cssText = 'position: fixed; z-index: 999999;';
+        document.body.appendChild(container);
+
+        const btn = document.createElement('button');
+        btn.innerHTML = '⚡';
+        btn.style.cssText = `
+          position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px;
+          border-radius: 50%; background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          border: none; color: white; font-size: 24px; cursor: pointer;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); z-index: 999998; transition: all 0.3s ease;
+        `;
+        btn.addEventListener('click', () => this.toggle());
+        container.appendChild(btn);
+        this.toggleBtn = btn;
+
+        const panel = document.createElement('div');
+        this.updatePanelStyle();
+
+        panel.innerHTML = `
+          <!-- Resize Handle -->
+          <div class="flowscope-resize-handle" style="
+            position: absolute; top: 0; left: 0; right: 0; height: 8px;
+            cursor: ns-resize; z-index: 10; transition: background 0.2s;
+          " onmouseenter="this.style.background='rgba(14, 165, 233, 0.3)'" onmouseleave="this.style.background='transparent'">
+            <div style="
+              position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+              width: 40px; height: 3px; background: rgba(255, 255, 255, 0.2); border-radius: 2px;
+              transition: background 0.2s; pointer-events: none;
+            " class="resize-indicator"></div>
+          </div>
+
+          <div style="padding: 12px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: rgba(0, 0, 0, 0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 18px;">⚡</span>
+                <span style="color: white; font-weight: 600; font-size: 13px;">Flowscope Network</span>
+                <span id="flowscope-count" style="color: rgba(255, 255, 255, 0.5); font-size: 11px; background: rgba(255, 255, 255, 0.1); padding: 2px 8px; border-radius: 10px;">0</span>
+              </div>
+              <button id="flowscope-close" style="background: transparent; border: none; color: rgba(255, 255, 255, 0.5); cursor: pointer; font-size: 20px; padding: 0; line-height: 1;">×</button>
+            </div>
+
+            <!-- View Tabs -->
+            <div style="display: flex; gap: 6px; margin-bottom: 12px;">
+              <button class="view-tab" data-view="list" style="flex: 1; padding: 8px; border: none; background: rgba(255, 255, 255, 0.15); color: white; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">📋 List</button>
+              <button class="view-tab" data-view="timeline" style="flex: 1; padding: 8px; border: none; background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.5); border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">📊 Timeline</button>
+              <button class="view-tab" data-view="errors" style="flex: 1; padding: 8px; border: none; background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.5); border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">⚠️ Errors</button>
+              <button class="view-tab" data-view="stats" style="flex: 1; padding: 8px; border: none; background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.5); border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">📈 Stats</button>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button id="compare-toggle" style="padding: 6px 12px; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.3); color: #6366f1; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">
+                Compare (0/2)
+              </button>
+              <button id="export-btn" style="padding: 6px 12px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">
+                📥 Export
+              </button>
+              <button id="clear-btn" style="padding: 6px 12px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">
+                🗑️ Clear
+              </button>
+            </div>
+          </div>
+
+          <div id="flowscope-content" style="flex: 1; overflow-y: auto; padding: 16px; background: rgba(0, 0, 0, 0.1);"></div>
+        `;
+
+        container.appendChild(panel);
+        this.panel = panel;
+        this.contentContainer = panel.querySelector('#flowscope-content');
+        this.countBadge = panel.querySelector('#flowscope-count');
+
+        // Setup resize handlers
+        this.setupResizeHandlers();
+
+        // Attach event listeners
+        panel.querySelector('#flowscope-close').addEventListener('click', () => this.hide());
+        panel.querySelector('#compare-toggle').addEventListener('click', () => this.toggleCompareMode());
+        panel.querySelector('#export-btn').addEventListener('click', () => this.exportHAR());
+        panel.querySelector('#clear-btn').addEventListener('click', () => this.clear());
+
+        // View tabs
+        panel.querySelectorAll('.view-tab').forEach(tab => {
+          tab.addEventListener('click', (e) => {
+            this.currentView = e.target.dataset.view;
+            panel.querySelectorAll('.view-tab').forEach(t => {
+              t.style.background = 'rgba(255, 255, 255, 0.05)';
+              t.style.color = 'rgba(255, 255, 255, 0.5)';
+            });
+            e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+            e.target.style.color = 'white';
+            this.render();
+          });
+        });
+      }
+
+      setupKeyboard() {
+        document.addEventListener('keydown', (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.preventDefault();
+            this.toggle();
+          }
+        });
+      }
+
+      updatePanelStyle() {
+        if (!this.panel) {
+          this.panel = document.querySelector('#flowscope-root > div:last-child');
+        }
+        if (this.panel) {
+          this.panel.style.cssText = `
+            position: fixed; left: 0; right: 0; bottom: 0; height: ${this.panelHeight}px;
+            background: rgba(23, 23, 23, 0.98);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px); z-index: 999997;
+            display: ${this.panelVisible ? 'flex' : 'none'};
+            flex-direction: column; overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          `;
+        }
+      }
+
+      setupResizeHandlers() {
+        const resizeHandle = this.panel.querySelector('.flowscope-resize-handle');
+        if (!resizeHandle) return;
+
+        resizeHandle.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          this.isResizing = true;
+          this.startY = e.clientY;
+          this.startHeight = this.panelHeight;
+          document.body.style.cursor = 'ns-resize';
+          document.body.style.userSelect = 'none';
+          const indicator = resizeHandle.querySelector('.resize-indicator');
+          if (indicator) indicator.style.background = 'rgba(14, 165, 233, 0.8)';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+          if (!this.isResizing) return;
+          e.preventDefault();
+          const deltaY = this.startY - e.clientY;
+          const newHeight = Math.min(Math.max(this.startHeight + deltaY, 200), window.innerHeight - 100);
+          this.panelHeight = newHeight;
+          this.updatePanelStyle();
+          this.updateButtonPosition();
+        });
+
+        document.addEventListener('mouseup', () => {
+          if (this.isResizing) {
+            this.isResizing = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            localStorage.setItem('flowscope-panel-height', String(this.panelHeight));
+            const indicator = this.panel.querySelector('.resize-indicator');
+            if (indicator) indicator.style.background = 'rgba(255, 255, 255, 0.2)';
+          }
+        });
+      }
+
+      updateButtonPosition() {
+        if (this.toggleBtn && this.panelVisible) {
+          this.toggleBtn.style.bottom = `${this.panelHeight + 20}px`;
+        }
+      }
+
+      toggle() { this.panelVisible ? this.hide() : this.show(); }
+      show() {
+        this.panelVisible = true;
+        this.updatePanelStyle();
+        this.toggleBtn.innerHTML = '−';
+        this.updateButtonPosition();
+      }
+      hide() {
+        this.panelVisible = false;
+        this.updatePanelStyle();
+        this.toggleBtn.innerHTML = '⚡';
+        this.toggleBtn.style.bottom = '20px';
+      }
+
+      addEvent(event) { this.events.unshift(event); this.render(); }
+      updateEvent(event) {
+        const index = this.events.findIndex(e => e.id === event.id);
+        if (index >= 0) { this.events[index] = event; this.render(); }
+      }
+
+      clear() {
+        this.events = [];
+        this.selectedForCompare = [];
+        this.expandedId = null;
+        this.compareMode = false;
+        this.render();
+      }
+
+      toggleCompareMode() {
+        this.compareMode = !this.compareMode;
+        if (!this.compareMode) this.selectedForCompare = [];
+        this.render();
+      }
+
+      toggleSelect(id) {
+        const index = this.selectedForCompare.indexOf(id);
+        if (index >= 0) {
+          this.selectedForCompare.splice(index, 1);
+        } else if (this.selectedForCompare.length < 2) {
+          this.selectedForCompare.push(id);
+        }
+        this.render();
+      }
+
+      exportHAR() {
+        const har = {
+          log: {
+            version: '1.2',
+            creator: { name: 'Flowscope', version: '1.0.0' },
+            entries: this.events.map(e => ({
+              startedDateTime: new Date(e.timestamp).toISOString(),
+              time: e.duration || 0,
+              request: {
+                method: e.method,
+                url: e.url,
+                httpVersion: 'HTTP/1.1',
+                headers: Object.entries(e.requestHeaders || {}).map(([name, value]) => ({ name, value })),
+              },
+              response: e.status ? {
+                status: e.status,
+                statusText: 'OK',
+                httpVersion: 'HTTP/1.1',
+                headers: Object.entries(e.responseHeaders || {}).map(([name, value]) => ({ name, value })),
+              } : undefined,
+            })),
+          },
+        };
+
+        const blob = new Blob([JSON.stringify(har, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `flowscope-${Date.now()}.har`;
+        a.click();
+        URL.revokeObjectURL(url);
+        console.log('✅ Exported HAR with', this.events.length, 'requests');
+      }
+
+      render() {
+        this.countBadge.textContent = this.events.length;
+
+        const compareBtn = this.panel.querySelector('#compare-toggle');
+        if (this.compareMode) {
+          compareBtn.style.background = 'rgba(99, 102, 241, 0.3)';
+          compareBtn.textContent = `Compare (${this.selectedForCompare.length}/2)`;
+        } else {
+          compareBtn.style.background = 'rgba(99, 102, 241, 0.2)';
+          compareBtn.textContent = 'Compare (0/2)';
+        }
+
+        if (this.selectedForCompare.length === 2) {
+          this.renderCompare();
+        } else {
+          switch (this.currentView) {
+            case 'timeline': this.renderTimeline(); break;
+            case 'errors': this.renderErrors(); break;
+            case 'stats': this.renderStats(); break;
+            default: this.renderList(); break;
+          }
+        }
+      }
+
+      renderList() {
+        if (this.events.length === 0) {
+          this.contentContainer.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255, 255, 255, 0.3); text-align: center;">
+              <div style="font-size: 48px; margin-bottom: 12px;">📡</div>
+              <div style="font-size: 14px;">No requests yet</div>
+            </div>
+          `;
+          return;
+        }
+
+        this.contentContainer.innerHTML = this.events.map(e => {
+          const isExpanded = this.expandedId === e.id;
+          const isSelected = this.selectedForCompare.includes(e.id);
+          return this.renderEvent(e, isExpanded, isSelected);
+        }).join('');
+
+        this.events.forEach(e => {
+          const elem = this.contentContainer.querySelector(`[data-id="${e.id}"]`);
+          if (elem) {
+            elem.addEventListener('click', () => {
+              if (this.compareMode) {
+                this.toggleSelect(e.id);
+              } else {
+                this.expandedId = this.expandedId === e.id ? null : e.id;
+                this.render();
+              }
+            });
+          }
+        });
+      }
+
+      renderEvent(e, isExpanded, isSelected) {
+          const statusColor = e.status < 300 ? '#10b981' : e.status < 400 ? '#f59e0b' : '#ef4444';
+          const methodColor = { GET: '#60a5fa', POST: '#34d399', PUT: '#fbbf24', DELETE: '#f87171' }[e.method] || '#9ca3af';
+
+        let html = `
+          <div data-id="${e.id}" style="
+            background: ${isSelected ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.03)'};
+            border: 1px solid ${isSelected ? 'rgba(99, 102, 241, 0.3)' : 'rgba(255, 255, 255, 0.05)'};
+            border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+          ">
+            <div style="display: flex; justify-content: space-between;">
+              <div style="flex: 1;">
+                <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+                  ${isSelected ? '<span style="color: #6366f1; font-size: 11px;">✓</span>' : ''}
+                <span style="color: ${methodColor}; font-weight: 600; font-size: 11px;">${e.method}</span>
+                <span style="color: ${statusColor}; font-weight: 600; background: ${statusColor}22; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${e.status || '...'}</span>
+              </div>
+                <div style="color: rgba(255, 255, 255, 0.8); font-size: 12px; margin-bottom: 4px; word-break: break-all;">${e.url}</div>
+                <div style="color: rgba(255, 255, 255, 0.4); font-size: 11px;">⏱ ${e.duration ? `${e.duration}ms` : '...'}</div>
+              </div>
+              <div style="color: rgba(255, 255, 255, 0.4); font-size: 11px;">${isExpanded ? '▼' : '▶'}</div>
+            </div>
+        `;
+
+        if (isExpanded && e.responseBody) {
+          html += `
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+              <div style="color: #34d399; font-size: 11px; font-weight: 600; margin-bottom: 8px;">📥 RESPONSE</div>
+              <pre style="background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 6px; font-size: 10px; color: rgba(255, 255, 255, 0.7); overflow-x: auto; margin: 0; max-height: 200px;">${JSON.stringify(e.responseBody, null, 2).substring(0, 1500)}...</pre>
+            </div>
+          `;
+        }
+
+        html += `</div>`;
+        return html;
+      }
+
+      renderTimeline() {
+        if (this.events.length === 0) {
+          this.contentContainer.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255, 255, 255, 0.3);"><div style="font-size: 48px; margin-bottom: 12px;">📊</div><div style="font-size: 14px;">Timeline is empty</div></div>`;
+          return;
+        }
+
+        const sorted = [...this.events].sort((a, b) => a.timestamp - b.timestamp);
+        const oldest = sorted[0]?.timestamp || Date.now();
+        const newest = sorted[sorted.length - 1]?.timestamp || Date.now();
+        const range = newest - oldest || 1;
+
+        this.contentContainer.innerHTML = `
+          <div style="padding: 20px 10px;">
+            <h3 style="color: white; font-size: 14px; font-weight: 600; margin-bottom: 24px;">📊 Request Timeline</h3>
+            <div style="position: relative; height: 100px; margin-bottom: 30px; background: rgba(255, 255, 255, 0.02); border-radius: 8px; padding: 20px 10px;">
+              <div style="position: absolute; left: 10px; right: 10px; top: 50%; height: 2px; background: rgba(255, 255, 255, 0.2);"></div>
+              ${sorted.map(event => {
+                const position = ((event.timestamp - oldest) / range) * 90 + 5;
+                const duration = event.duration || 0;
+                const size = duration > 1000 ? 16 : duration > 500 ? 12 : duration > 200 ? 10 : 8;
+                const color = event.status >= 400 ? '#ef4444' : event.status >= 300 ? '#fbbf24' : '#10b981';
+                return `<div style="position: absolute; left: ${position}%; top: 50%; transform: translate(-50%, -50%); width: ${size}px; height: ${size}px; background: ${color}; border: 2px solid rgba(0, 0, 0, 0.3); border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px ${color}40;" title="${event.method} ${event.url}\n${event.status || 'pending'} • ${event.duration || 0}ms"></div>`;
+              }).join('')}
+            </div>
+            <div style="color: rgba(255, 255, 255, 0.4); font-size: 11px; display: flex; justify-content: space-between; margin-bottom: 20px;">
+              <span>${Math.floor((Date.now() - oldest) / 1000)}s ago</span>
+              <span>Now</span>
+            </div>
+            <h4 style="color: white; font-size: 12px; font-weight: 600; margin-bottom: 12px;">Recent Requests</h4>
+            ${sorted.slice(-5).reverse().map(e => this.renderEvent(e, false, false)).join('')}
+          </div>
+        `;
+      }
+
+      renderErrors() {
+        const errors = this.events.filter(e => e.status >= 400);
+        if (errors.length === 0) {
+          this.contentContainer.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255, 255, 255, 0.3);"><div style="font-size: 48px; margin-bottom: 12px;">🎉</div><div style="font-size: 14px;">No errors!</div></div>`;
+          return;
+        }
+
+        const server5xx = errors.filter(e => e.status >= 500).length;
+        const client4xx = errors.filter(e => e.status >= 400 && e.status < 500).length;
+
+        this.contentContainer.innerHTML = `
+          <div>
+            <h3 style="color: #ef4444; font-size: 16px; font-weight: 700; margin-bottom: 20px;">⚠️ Error Analysis</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+              <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; padding: 16px;">
+                <div style="color: rgba(239, 68, 68, 0.8); font-size: 11px;">5xx Server</div>
+                <div style="color: #ef4444; font-size: 28px; font-weight: 700;">${server5xx}</div>
+              </div>
+              <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 10px; padding: 16px;">
+                <div style="color: rgba(251, 191, 36, 0.8); font-size: 11px;">4xx Client</div>
+                <div style="color: #fbbf24; font-size: 28px; font-weight: 700;">${client4xx}</div>
+              </div>
+            </div>
+            <h4 style="color: white; font-size: 12px; font-weight: 600; margin-bottom: 12px;">Error Requests</h4>
+            ${errors.map(e => this.renderEvent(e, false, false)).join('')}
+          </div>
+        `;
+      }
+
+      renderStats() {
+        if (this.events.length === 0) {
+          this.contentContainer.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255, 255, 255, 0.3);"><div style="font-size: 48px; margin-bottom: 12px;">📈</div><div style="font-size: 14px;">No stats yet</div></div>`;
+          return;
+        }
+
+        const completed = this.events.filter(e => e.duration);
+        const durations = completed.map(e => e.duration);
+        const avgDuration = durations.length > 0 ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0;
+        const maxDuration = durations.length > 0 ? Math.max(...durations) : 0;
+        const minDuration = durations.length > 0 ? Math.min(...durations) : 0;
+        const successCount = this.events.filter(e => e.status >= 200 && e.status < 300).length;
+        const successRate = this.events.length > 0 ? ((successCount / this.events.length) * 100).toFixed(1) : '0.0';
+
+        this.contentContainer.innerHTML = `
+          <div>
+            <h3 style="color: white; font-size: 16px; font-weight: 700; margin-bottom: 20px;">📈 Performance Stats</h3>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px;">
+              <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 10px; padding: 16px;">
+                <div style="color: rgba(59, 130, 246, 0.8); font-size: 11px;">Avg Time</div>
+                <div style="color: #3b82f6; font-size: 28px; font-weight: 700;">${avgDuration}ms</div>
+              </div>
+              <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 16px;">
+                <div style="color: rgba(16, 185, 129, 0.8); font-size: 11px;">Success Rate</div>
+                <div style="color: #10b981; font-size: 28px; font-weight: 700;">${successRate}%</div>
+              </div>
+              <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 10px; padding: 16px;">
+                <div style="color: rgba(251, 191, 36, 0.8); font-size: 11px;">Slowest</div>
+                <div style="color: #fbbf24; font-size: 28px; font-weight: 700;">${maxDuration}ms</div>
+              </div>
+              <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 10px; padding: 16px;">
+                <div style="color: rgba(34, 197, 94, 0.8); font-size: 11px;">Fastest</div>
+                <div style="color: #22c55e; font-size: 28px; font-weight: 700;">${minDuration}ms</div>
+              </div>
+            </div>
+            <h4 style="color: white; font-size: 12px; font-weight: 600; margin-bottom: 12px;">Slowest Requests</h4>
+            ${[...completed].sort((a, b) => b.duration - a.duration).slice(0, 5).map(e => this.renderEvent(e, false, false)).join('')}
+          </div>
+        `;
+      }
+
+      renderCompare() {
+        if (this.selectedForCompare.length !== 2) {
+          this.renderList();
+          return;
+        }
+
+        const [id1, id2] = this.selectedForCompare;
+        const e1 = this.events.find(e => e.id === id1);
+        const e2 = this.events.find(e => e.id === id2);
+
+        this.contentContainer.innerHTML = `
+          <div style="color: white; font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between;">
+            <span>Compare Mode</span>
+            <button onclick="window.flowscope.compareMode = false; window.flowscope.selectedForCompare = []; window.flowscope.render();" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Close</button>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <div style="color: #60a5fa; font-size: 12px; font-weight: 600; margin-bottom: 8px;">Request 1</div>
+              <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
+                <div style="color: white; font-size: 11px; margin-bottom: 8px; word-break: break-all;">${e1.url}</div>
+                <div style="color: ${e1.status < 300 ? '#10b981' : '#ef4444'}; font-size: 11px;">Status: ${e1.status}</div>
+                <div style="color: rgba(255, 255, 255, 0.6); font-size: 11px;">Duration: ${e1.duration}ms</div>
+              </div>
+            </div>
+            <div>
+              <div style="color: #34d399; font-size: 12px; font-weight: 600; margin-bottom: 8px;">Request 2</div>
+              <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;">
+                <div style="color: white; font-size: 11px; margin-bottom: 8px; word-break: break-all;">${e2.url}</div>
+                <div style="color: ${e2.status < 300 ? '#10b981' : '#ef4444'}; font-size: 11px;">Status: ${e2.status}</div>
+                <div style="color: rgba(255, 255, 255, 0.6); font-size: 11px;">Duration: ${e2.duration}ms</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top: 16px;">
+            <div style="color: #fbbf24; font-size: 12px; font-weight: 600; margin-bottom: 8px;">📊 Differences</div>
+            <div style="background: rgba(251, 191, 36, 0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.3);">
+              <div style="color: white; font-size: 11px;">Status: ${e1.status} vs ${e2.status} ${e1.status !== e2.status ? '❌' : '✓'}</div>
+              <div style="color: white; font-size: 11px;">Duration: ${e1.duration}ms vs ${e2.duration}ms (Δ ${Math.abs((e1.duration || 0) - (e2.duration || 0))}ms)</div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // OLD: Initialize Flowscope (now handled by SDK import above)
+    // window.Flowscope = new FlowscopeUltimate();
+    // window.Flowscope.init();
+    */
+  </script>
+  <!-- End of old inline implementation -->
+</body>
+</html>
+

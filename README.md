@@ -4,6 +4,8 @@
 
 Find issues in **10 seconds** instead of **5 minutes of scrolling**.
 
+> **🆕 Now available as an embeddable SDK!** Add Chrome DevTools Network tab directly to your app—no proxy needed. [Jump to Embedded SDK →](#-new-embeddable-client-sdk)
+
 ## Why FlowScope?
 
 Terminal logging is the default, but it's painful:
@@ -31,6 +33,129 @@ Join our Discord community for discussions, support, and updates:
 
 [![Discord](https://img.shields.io/badge/Discord-Join%20our%20community-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/KqdBcqRk5E)
 
+## 🚀 NEW: Embeddable Client SDK
+
+Want to embed FlowScope **directly into your web app**? No proxies, no separate tools—just a Chrome DevTools-like network monitor inside your application!
+
+**Install via npm:**
+```bash
+npm install @flowscope/client
+```
+
+```javascript
+import Flowscope from '@flowscope/client';
+Flowscope.init();
+```
+
+**Or use CDN (no build step):**
+```html
+<script src="https://unpkg.com/@flowscope/client@latest/dist/index.js"></script>
+<script>
+  Flowscope.init();
+</script>
+```
+
+Press `Cmd+K` to toggle the panel - that's it!
+
+### ✨ What You Get
+
+- 📋 **Live request monitoring** - Automatically captures all fetch/XHR calls
+- 📊 **Visual timeline** - See request timing and performance at a glance
+- ⚠️ **Error analysis** - Grouped errors with 4xx/5xx breakdown
+- 📈 **Performance stats** - Avg/min/max response times, success rates
+- 🔄 **Compare mode** - Side-by-side diff of any 2 requests
+- 📥 **Export HAR** - Download for Chrome DevTools or Postman
+- ⌨️ **Keyboard shortcuts** - Toggle with Cmd+K
+- 🔒 **Production-safe** - Environment controls + access key protection
+
+### Framework Integration
+
+**React:**
+```jsx
+import { useFlowscope } from '@flowscope/client/react';
+
+function App() {
+  useFlowscope();
+  return <YourApp />;
+}
+```
+
+**Vue 3:**
+```vue
+<script setup>
+import { useFlowscope } from '@flowscope/client/vue';
+useFlowscope();
+</script>
+```
+
+### 🎯 Try the Demo
+
+```bash
+cd packages/client
+open demo.html
+```
+
+### 🔒 Production-Ready Security
+
+Flowscope includes enterprise-grade security for production deployments:
+
+#### Development (Simple)
+```javascript
+// Auto-enabled in dev environments
+Flowscope.init({
+  environments: ['development'], // Only active on localhost
+});
+```
+
+#### Production (Secure - Backend Verified)
+```javascript
+// In your app - NO secrets in client code!
+Flowscope.init({
+  environments: [],
+  apiEndpoint: '/api/debug/flowscope-activate', // Your backend API
+});
+
+// User activates in console:
+await Flowscope.requestActivation();
+// ✅ Flowscope activated! (after backend verification)
+```
+
+**Your backend validates:**
+- ✅ User authentication (who is requesting?)
+- ✅ User role/permissions (admin/support only)
+- ✅ Organization membership
+- ✅ Domain authorization
+- ✅ Generates time-limited JWT token (4 hours)
+
+**Security model:**
+- 🔐 **No secrets in client code** - Access control on backend
+- 🔐 **Organization-scoped** - Tied to your org database
+- 🔐 **Domain-locked** - Token only works on authorized domains
+- 🔐 **Time-limited** - Tokens expire after N hours
+- 🔐 **Audit trail** - Log all activations
+- 🔐 **Rate limited** - Prevent abuse
+
+**📖 Full production setup:** [packages/client/AUTHENTICATION.md](./packages/client/AUTHENTICATION.md)
+
+**Full documentation:** [packages/client/README.md](./packages/client/README.md)
+
+### 🤔 Embedded SDK vs Proxy Mode
+
+FlowScope offers two deployment modes:
+
+| Feature | **Embedded SDK** | **Proxy Mode** |
+|---------|------------------|----------------|
+| **Setup** | `npm install` + 1 line | Backend proxy required |
+| **Use Case** | Frontend apps, quick debugging | Full-stack apps, team debugging |
+| **Captures** | Browser requests only | All HTTP traffic |
+| **Backend Needed** | ❌ No | ✅ Yes |
+| **Session Sharing** | Download HAR | Real-time collaboration |
+| **Production Ready** | ✅ Toggle off in prod | ✅ Separate environment |
+
+**Use Embedded SDK when:** You're debugging a frontend app, want zero setup, or need an in-app DevTools.  
+**Use Proxy Mode when:** You're debugging full-stack, want to share sessions with teammates, or need server-side capture.
+
+---
 
 ## Quick Start
 
@@ -227,11 +352,13 @@ Unlike other observability tools that add 100ms+ latency, FlowScope is designed 
 ## Use Cases
 
 - **Frontend debugging** - See exactly what your API returns without scrolling logs
+- **Embedded DevTools** - 🆕 Add network monitoring directly to your app with the SDK
 - **Backend testing** - Replay requests while developing endpoints
 - **Performance profiling** - Find slow endpoints with p95/p99 stats at a glance
 - **Integration testing** - Compare expected vs actual responses side-by-side
 - **LLM development** - Track token usage, costs, and export to Arize Phoenix
 - **API exploration** - Copy requests as cURL for documentation or debugging
+- **Customer demos** - 🆕 Show network activity in your product (embedded SDK)
 
 
 ### Development Setup
@@ -251,6 +378,11 @@ npm run test:mock  # Start mock server
 npm run test:run   # Run test requests
 ```
 
+
+**Three ways to use FlowScope:**
+1. **Proxy Mode** → `apps/server` + `apps/web` (full-stack debugging)
+2. **Embedded SDK** → `packages/client` (frontend-only, zero setup)
+3. **Hybrid** → Use both for maximum visibility
 
 ## License
 
