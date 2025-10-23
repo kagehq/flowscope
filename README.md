@@ -33,7 +33,7 @@ Join our Discord community for discussions, support, and updates:
 
 [![Discord](https://img.shields.io/badge/Discord-Join%20our%20community-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/KqdBcqRk5E)
 
-## 🚀 NEW: Embeddable Client SDK
+## Embeddable Client SDK
 
 Want to embed FlowScope **directly into your web app**? No proxies, no separate tools—just a Chrome DevTools-like network monitor inside your application!
 
@@ -48,16 +48,16 @@ Flowscope.init();
 
 Press `Cmd+K` to toggle the panel. Auto-captures all fetch/XHR calls, provides search/filtering, performance metrics, HAR export, and production-safe authentication.
 
-**✨ Features:**
+**Features:**
 - Auto-instruments fetch, XHR, WebSocket
 - Beautiful DevTools-style resizable panel
 - Search, filter, compare, export
 - React & Vue integrations
 - Production-ready security
 
-**📖 Full documentation:** [packages/client/README.md](./packages/client/README.md)
+**Full documentation:** [packages/client/README.md](./packages/client/README.md)
 
-### 🤔 Embedded SDK vs Proxy Mode
+### Embedded SDK vs Proxy Mode
 
 FlowScope offers two deployment modes:
 
@@ -295,7 +295,6 @@ npm run build
 npm run test:mock  # Start mock server
 npm run test:run   # Run test requests
 ```
-
 
 **Three ways to use FlowScope:**
 1. **Proxy Mode** → `apps/server` + `apps/web` (full-stack debugging)
