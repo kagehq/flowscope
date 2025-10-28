@@ -462,12 +462,10 @@ function tryParseJSON(value: string | undefined): any {
   <div class="min-h-screen">
     <div class="mx-auto max-w-8xl animate-fade-in">
       <!-- Header -->
-      <header class="flex flex-col p-6 py-2 gap-4 border-b border-gray-500/15">
+      <header class="flex flex-col p-5 px-4 py-2 gap-4 border-b border-gray-500/15">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <h1 class="text-sm font-semibold text-white">
-              Flowscope
-            </h1>
+            <img src="~/assets/img/logo.png" alt="Logo" class="w-6 h-6">
             <span class="text-gray-500/50 text-sm">/</span>
             <div class="border border-gray-500/20 rounded-xl">
               <nav class="flex gap-1 p-0.5">
@@ -595,7 +593,6 @@ function tryParseJSON(value: string | undefined): any {
             </button>
           </div>
         </div>
-
       </header>
 
       <!-- Tabs -->
@@ -737,7 +734,7 @@ function tryParseJSON(value: string | undefined): any {
        </div>
 
        <!-- Quick Filters -->
-       <div class="border-b border-gray-500/10 px-6 py-3 flex items-center gap-2 bg-gray-500/5">
+       <div class="border-b border-gray-500/10 px-4 py-2 flex items-center gap-2 bg-gray-500/5">
          <span class="text-xs text-gray-400 font-medium mr-2">Quick filters:</span>
 
          <button
